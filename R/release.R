@@ -26,7 +26,7 @@ release_gh <- function(bump = "dev", is_cran = bump != "dev") {
   new_dsc <- release_prechecks(bump, is_cran)
   new_dsc$write()
   git_branch_set(is_cran)
-  on.exit(sys_call("git", c("checkout", "-")), add = TRUE)
+  on.exit(sys_call("git", c("checkout", "master")), add = TRUE)
   # if we fail, must reset version, if we succeed, it's not stage
   # on.exit(sys_call("git", c("reset", "HEAD", '--hard')), add = TRUE)
 
@@ -86,12 +86,11 @@ release_complete <- function(ask = TRUE, is_cran = ask, tag = NULL) {
     if (is.null(tag)) {
       tag <- paste0("v", desc::desc_get_version())
     }
-    if (substr(tag, 1, 1) == "v") {
+    if (substr(tag, 1, 1) != "v") {
       rlang::abort("tag must start with v.")
     }
-    sys_call("git", glue::glue("push {tag}"))
+    sys_call("git", glue::glue("push origin {tag}"))
   }
-
   precommit::autoupdate() # only updates if tag is on the master branch
   desc::desc_bump_version("dev")
   usethis::ui_done("Bumped version to dev")

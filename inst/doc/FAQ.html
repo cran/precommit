@@ -336,7 +336,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="why-are-my-hooks-running-slowly" class="section level2">
 <h2>Why are my hooks running slowly?</h2>
-<p>Some of the hooks depend on R functions that run slowly, e.g. the <code>style-files</code> hook depends on <code>styler</code>, which is not very fast. Also, note that for each hook, R is started. Make sure your startup process is quick for non-interactive use, e.g. your <code>.Rprofile</code> and related files do not have a long execution time. E.g. wrap code in <code>if (interactive())</code> if possible, so it won’t run when pre-commit hooks are ran. Find out more about the startup process with <code>?startup</code>. We’d like to support the <code>--vanilla</code> option but it’s <a href="https://github.com/lorenzwalthert/precommit/issues/165">not easily possible we believe</a>.</p>
+<p>Some of the hooks depend on R functions that run slowly, e.g. the <code>style-files</code> hook depends on <code>styler</code>, which is not very fast. Also, note that for each hook, R is started. Make sure your startup process is quick for non-interactive use, e.g. your <code>.Rprofile</code> and related files do not have a long execution time when pre-commit calls them. You can wrap code in <code>if (interactive())</code> to only execute it in an interactive session or wrap it in <code>if (Sys.getenv(&quot;PRE_COMMIT&quot;) != &quot;1&quot;)</code> (if you have <code>pre-commit &gt;= 2.5.0</code>), so it won’t run when pre-commit hooks are ran. Find out more about the startup process with <code>?startup</code>.</p>
 <hr />
 <p>There is more. Check out the documentation of the <a href="https://pre-commit.com">pre-commit</a> framework.</p>
 </div>

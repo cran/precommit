@@ -1,3 +1,21 @@
+# precommit v0.1.3
+
+**API changes**
+
+- style-files hook gains new argument `style_transformers` that allows 
+  to specify a style guide like this: 
+  `--'style_transformers=tidyverse_style(scope = "spaces")'`, which gives the 
+  user the flexibility to also specify arguments of the style guide. The 
+  argument `--style_fun` is deprecated and will be removed in a future release.
+  (#183).
+- install_hooks in `use_precommit()` should now work as expected (#185).
+
+**Minor changes**
+
+- `precommit::uninstall_precommit()` now correctly removes 
+  `^\\.pre-commit-config.yaml$`from `.Rbuildignore` and does not show a 
+  prompt (#199).
+
 # precommit v0.1.2
 
 Initial CRAN release. See https://lorenzwalthert.github.io/precommit/.
