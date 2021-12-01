@@ -9,16 +9,16 @@
 #' - update default config in inst/
 #' - commit
 #' - git tag
-#' - run `inst/consistent-release-tag` hook with --release-mode (passing args to hooks
+#' - run `inst/hooks/local/consistent-release-tag.R` hook with --release-mode (passing args to hooks
 #'   not possible interactively, hence we run in advance).
-#' - commit and push with skipping `inst/consistent-release-tag`.
+#' - commit and push with skipping `inst/hooks/local/consistent-release-tag.R`.
 #' - autoupdate own config file
 #' - bump description with dev
 #' - commit and push DESCRIPTION and .pre-commit-config.yaml
 #'
 #' @section CRAN release:
 #' If `is_cran` is `TRUE`, the workflow is changed slightly:
-#' - push to release branch, not master.
+#' - push to release branch, not main.
 #' - doesn't run [release_complete()]. This must be done manually after accepted
 #'   on CRAN.
 #' @keywords internal
@@ -26,12 +26,15 @@ release_gh <- function(bump = "dev", is_cran = bump != "dev") {
   new_dsc <- release_prechecks(bump, is_cran)
   new_dsc$write()
   git_branch_set(is_cran)
-  on.exit(sys_call("git", c("checkout", "master")), add = TRUE)
+  if (!is_cran) {
+    on.exit(sys_call("git", c("checkout", "main")), add = TRUE)
+  }
+
   # if we fail, must reset version, if we succeed, it's not stage
   # on.exit(sys_call("git", c("reset", "HEAD", '--hard')), add = TRUE)
 
   new_version <- paste0("v", as.character(new_dsc$get_version()))
-  usethis::ui_done("Bumped version.")
+  cli::cli_alert_success("Bumped version.")
   path_template_config <- c(
     "inst/pre-commit-config-pkg.yaml",
     "inst/pre-commit-config-proj.yaml"
@@ -40,15 +43,15 @@ release_gh <- function(bump = "dev", is_cran = bump != "dev") {
   purrr::walk(path_template_config, update_rev_in_config,
     new_version = new_version
   )
-  usethis::ui_done("Updated version in default config.")
+  cli::cli_alert_success("Updated version in default config.")
   msg <- glue::glue("Release {new_version}, see NEWS.md for details.")
   sys_call("git", glue::glue('commit DESCRIPTION {paste0(path_template_config, collapse = " ")} -m "{msg}"'),
     env = "SKIP=spell-check,consistent-release-tag"
   )
-  usethis::ui_done("Committed DESCRIPTION and config template")
+  cli::cli_alert_success("Committed DESCRIPTION and config template")
   sys_call("git", glue::glue('tag -a {new_version} -m "{msg}"'))
-  sys_call("./inst/consistent-release-tag", "--release-mode")
-  usethis::ui_done("Tagged last commit with release version.")
+  sys_call("./inst/hooks/local/consistent-release-tag.R", "--release-mode")
+  cli::cli_alert_success("Tagged last commit with release version.")
   if (!is_cran) {
     sys_call("git", glue::glue("push origin {new_version}"),
       env = "SKIP=consistent-release-tag"
@@ -58,9 +61,9 @@ release_gh <- function(bump = "dev", is_cran = bump != "dev") {
   sys_call("git", glue::glue("push"),
     env = "SKIP=consistent-release-tag"
   )
-  usethis::ui_done("Pushed commits and tags.")
+  cli::cli_alert_success("Pushed commits and tags.")
   if (is_cran) {
-    usethis::ui_info(paste(
+    cli::cli_alert_info(paste(
       "Once on CRAN, call `precommit::release_complete(is_cran = TRUE)` to bump to the devel",
       "version."
     ))
@@ -75,12 +78,12 @@ release_gh <- function(bump = "dev", is_cran = bump != "dev") {
 #' @param tag The tag to push. `NULL` will derive the tag from `DESCRIPTION`.
 #' @keywords internal
 release_complete <- function(ask = TRUE, is_cran = ask, tag = NULL) {
-  if (git_branch_get() != "master") {
-    rlang::abort("Must be on master to complete the release.")
+  if (git_branch_get() != "main") {
+    rlang::abort("Must be on main to complete the release.")
   }
   if (ask) {
-    abort_if_not_yes("Did you merge the release branch into master?")
-    abort_if_not_yes("Did you pull the latest master from origin?")
+    abort_if_not_yes("Did you merge the release branch into main?")
+    abort_if_not_yes("Did you pull the latest main from origin?")
   }
   if (is_cran) {
     if (is.null(tag)) {
@@ -91,20 +94,23 @@ release_complete <- function(ask = TRUE, is_cran = ask, tag = NULL) {
     }
     sys_call("git", glue::glue("push origin {tag}"))
   }
-  precommit::autoupdate() # only updates if tag is on the master branch
+  precommit::autoupdate() # only updates if tag is on the main branch
   desc::desc_bump_version("dev")
-  usethis::ui_done("Bumped version to dev")
+  cli::cli_alert_success("Bumped version to dev")
   sys_call("git", glue::glue('commit DESCRIPTION .pre-commit-config.yaml -m "use latest release"'),
     env = "SKIP=spell-check"
   )
   sys_call("git", glue::glue("push"))
-  usethis::ui_done("Committed and pushed dev version.")
+  cli::cli_alert_success("Committed and pushed dev version.")
+  if (is_cran) {
+    cli::cli_ul("Go to GitHub and draft a new release from the tag {tag}.")
+  }
 }
 
 
 release_prechecks <- function(bump, is_cran) {
   git_assert_clean()
-  usethis::ui_info("autoupdating hooks.")
+  cli::cli_alert_info("autoupdating hooks.")
   autoupdate()
   git_assert_clean()
   old_version <- paste0("v", desc::desc_get_version())
@@ -129,7 +135,7 @@ release_prechecks <- function(bump, is_cran) {
 update_rev_in_config <- function(new_version,
                                  path = "inst/pre-commit-config.yaml") {
   config <- readLines(path)
-  ours <- grep("-   repo: https://github.com/lorenzwalthert/precommit", config, fixed = TRUE)
+  ours <- grep(paste0("-   repo: ", hooks_repo), config, fixed = TRUE)
   others <- setdiff(grep("-   repo:", config, fixed = TRUE), ours)
   next_after_ours <- others[others > ours][1]
   rev <- grep("rev:", config)
@@ -176,11 +182,11 @@ git_branch_set <- function(is_cran) {
         branch_name
       )
     )
-    usethis::ui_done("Checked out branch {branch_name} for CRAN release process.")
+    cli::cli_alert_success("Checked out branch {branch_name} for CRAN release process.")
   } else {
-    if (git_branch_get() != "master") {
+    if (git_branch_get() != "main") {
       rlang::abort(paste(
-        "Need to be on branch 'master' to create a release, otherwise autoudate",
+        "Need to be on branch 'main' to create a release, otherwise autoudate",
         "won't use the new ref."
       ))
     }
@@ -190,9 +196,9 @@ git_branch_set <- function(is_cran) {
 
 git_assert_even_with_origin <- function() {
   tmp <- tempfile()
-  system2("git", "diff HEAD..origin/master", stdout = tmp)
+  system2("git", "diff HEAD..origin/main", stdout = tmp)
   if (length(readLines(tmp) > 0)) {
-    rlang::abort("remote master must be even with local master before release process can start.")
+    rlang::abort("remote main must be even with local main before release process can start.")
   }
 }
 

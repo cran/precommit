@@ -1,17 +1,153 @@
-# precommit v0.1.3
+# precommit v0.2.0
 
-**API changes**
 
-- style-files hook gains new argument `style_transformers` that allows 
-  to specify a style guide like this: 
-  `--'style_transformers=tidyverse_style(scope = "spaces")'`, which gives the 
-  user the flexibility to also specify arguments of the style guide. The 
-  argument `--style_fun` is deprecated and will be removed in a future release.
-  (#183).
-- install_hooks in `use_precommit()` should now work as expected (#185).
+This version marks the switch to [`language: r`](https://pre-commit.com/#r) of 
+all existing hooks. This means two things:
+
+* creation of isolated pre-commit environments: No 
+  more manual dependency management for hooks nor conflicts with your global R 
+  library and more consistent output of hooks from different collaborators in a
+  project. Thanks to {renv}'s excellent 
+  [caching](https://rstudio.github.io/renv/articles/renv.html#cache-1), this 
+  hardly consumes any space and is fast.
+  This requires the Python package `pre-commit >= 2.11.1` (ideally even
+  `>= 2.13.0`). See *Installation/Update** below (#233, #250, #260, #264, #273,
+  #315, #313, #308, #301, #300, #295, #285, #328).
+* support for continuous integration via [pre-commit.ci](https://pre-commit.ci)
+  and [GitHub Actions]([GitHub Actions](https://github.com/pre-commit/action), 
+  that is, running the pre-commit hooks as part of a CI pipeline. This
+  means that hook passing can be enforced for pull requests, even if the creator
+  did not run the hooks locally. Further, the diff from running the hooks is 
+  committed and pushed back to the remote repository. This may fix the failing 
+  hook problems in some cases (e.g. `style-files`). See `vignette("ci")` for a
+  comparison of the two services (#318). 
+  
+*API changes**
+
+*  `use_precommit()` gains a new argument `ci` defaulting to `"native"` (for 
+  [pre-commit](https://pre-commit.ci)) to set up continuous
+  integration. Other allowed values are `"gha"` (for  
+  [GitHub Actions](https://github.com/pre-commit/action)) or 
+  `NULL` (for no CI). 
+* The new exported function `use_ci(ci = "native")` can be used to set up 
+  continuous integration for existing repos. The default behavior for `ci` for 
+  both functions is governed by the R option `precommit.ci`.
+- `version_precommit()` and `update_precommit()` are new functions to check the
+  version of the installed pre-commit executable and to update it (#197).
+* `style-files` hook gains an argument `--cache-root` that is passed to 
+  `options(styler.cache_root = ...)` (#305).
+- `style-files` hook now supports the full
+  [`style_file()`](https://styler.r-lib.org/dev/reference/style_file.html) API,
+  e.g. you can supply `--scope=spaces` and similar via `args:` in your
+  `.pre-commit-config.yaml`. See the
+  [docs](https://lorenzwalthert.github.io/precommit/articles/available-hooks.html#style-files-1)
+  for details.
+- `style-files` and `roxygenize` hooks now warn if there is no permanent 
+  `{R.cache}` cache set up. You can silence the warning with the hook argument 
+  `--no-warn-cache` (#225).
+
+
+**Installation/Update**
+
+Please follow the 
+[update instructions](https://lorenzwalthert.github.io/precommit/dev/#update) or
+[installation instructions](https://lorenzwalthert.github.io/precommit/dev/#installation)
+depending on whether or not you previously used pre-commit.
+
+
+**Major changes**
+
+- Because hooks run in a virtual environment and the `roxygenize` hook runs
+  `pkgload::load_all()`, you need to list all dependencies of your package in
+  `additional_dependencies` field in `.pre-commit-config.yaml`. You will be 
+  prompted to add them if they are missing, 
+  `precommit::snippet_generate("additional-deps-roxygenize")` generates
+  the code you can copy/paste (#247, #248, #249).
+- the `parsable-R` hook can now also parse `.Rmd` files (#325).
+- In order to avoid multiple installations of the pre-commit framework, a 
+  warning is issued if multiple are found so the user can remove them (#266, 
+  #273, #277, #278).
+* `use_precommit(..., install_hooks = TRUE)` is no longer blocking by default.
+  New option `precommit.block_install_hooks` (defaults to `FALSE`) governs the
+  behavior (#312).
+* Always sort `inst/WORDLIST` (#303).
+* `.lintr` and `.gitlab-ci.yml` are not ignored in the spell check hook (#317).
+- Warnings are no longer promoted to errors in the styler hook, which is 
+  particularly relevant for the apparently random error 
+  `Unknown or uninitialised column: text` (#268).
+- `deps-in-desc` now checks `.Rprofile`, `.Rmd` and `.Rnw` files in addition to 
+  `.R` files (#216).  
+- the lintr and styler hook now also check `.Rmd`, `.Rnw` and `.Rprofile` files 
+  (#287).
+- `{renv}` infra files are not checked anymore by default in the template config
+  files (#237).
+- `.png`, `.jpeg`, `.pdf` and files in `.github/workflows` are no longer 
+  spell-checked in the template config file (#276).
+
 
 **Minor changes**
 
+* rename default branch to *main* (#307).
+* Use dev version of {lintr} to reduce total dependencies from 71 to 59 that
+  brings down install time.
+- The location of the pre-commit executable is now also recognized on Apple 
+  Silicon when installed with Homebrew (#240).
+- The location of the pre-commit executable is now also recognized on macOS when
+  installed with pip3 and `fs >= 1.5.1` (#330).
+- pinning python version to 3.9 for conda until problems related to 3.10 are
+  fixed (#310).
+- The cache for the roxygen2 hook is now also invalidated for changes in formals 
+  if there are no changes in roxygen comments (#214).
+- All sub-patterns in the `exclude:` pattern of the spell check hook are now 
+  ordered alphabetically (#276).
+- The `deps-in-desc` hook now points to the hook argument 
+  `--allow_private_imports` when the hook fails due to private imports (#254).
+- roxygenize hook is now fully tested (#267).
+- Hook scripts were relocated and R hooks now have a file extension (#280).
+- Hook dependency updates are proposed by an automatic monthly pull request 
+  to `lorenzwalthert/precommit`. This does not affect users directly (#430).
+- Updated GitHub Action workflows (#288).
+* Use LF line endings in git config to ensure passing tests on Windows for R 
+  devel (#321).
+- fixing typos (#289).
+- fix R CMD Check (#284).
+
+
+A big hand to all the contributors of this release:
+
+[&#x0040;adamblake](https://github.com/adamblake), 
+[&#x0040;arbues6](https://github.com/arbues6), 
+[&#x0040;b4D8](https://github.com/b4D8), 
+[&#x0040;bart1](https://github.com/bart1), 
+[&#x0040;dhersz](https://github.com/dhersz), 
+[&#x0040;joelnitta](https://github.com/joelnitta), 
+[&#x0040;jucor](https://github.com/jucor),
+[&#x0040;lorenzwalthert](https://github.com/lorenzwalthert), [&#x0040;lukasfeick-sw](https://github.com/lukasfeick-sw), [&#x0040;MarkMc1089](https://github.com/MarkMc1089), 
+[&#x0040;njtierney](https://github.com/njtierney), 
+[&#x0040;pat-s](https://github.com/pat-s), 
+[&#x0040;pwildenhain](https://github.com/pwildenhain), and [&#x0040;rossdrucker](https://github.com/rossdrucker)
+
+For previous versions of `NEWS.md` with news bullet per patch release, see the 
+[latest `NEWS.md` before gathering](https://github.com/lorenzwalthert/precommit/blob/7a8740714ab868d20e981b8b80898d7be050e34e/NEWS.md).
+
+# precommit v0.1.3
+
+This is mainly a CRAN maintenance release because of #201 and includes some 
+bug fixes and no API changes.
+
+A big hand to all the contributors of this release:
+[&#x0040;fschoner](https://github.com/fschoner), [&#x0040;krzyslom](https://github.com/krzyslom),
+[&#x0040;lorenzwalthert](https://github.com/lorenzwalthert), [&#x0040;maurolepore](https://github.com/maurolepore),
+[&#x0040;pat-s](https://github.com/pat-s), and [&#x0040;zkamvar](https://github.com/zkamvar).
+
+
+**Minor Changes**
+
+- install_hooks in `use_precommit()` should now work as expected (#185).
+- Switching from Travis to GitHub Actions (#191).
+- `use_precommit()` now writes to the right `.Rbuildignore` when `root` is not 
+  the current working directory (#188, @krzyslom).
+- Documentation improvements (#179, @maurolepore)
 - `precommit::uninstall_precommit()` now correctly removes 
   `^\\.pre-commit-config.yaml$`from `.Rbuildignore` and does not show a 
   prompt (#199).

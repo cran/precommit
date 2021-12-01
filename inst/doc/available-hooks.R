@@ -6,8 +6,8 @@ repos:
 -   repo: https://github.com/lorenzwalthert/precommit
     rev: {rev}
     hooks:
-    -   id: style-files
-        args: [--style_pkg=styler, --style_fun=tidyverse_style]
+    -   id: lintr
+        args: [--warn-only, --key=value]
 "))
 
 ## ---- echo = FALSE, comment = ""----------------------------------------------

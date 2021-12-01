@@ -2,7 +2,7 @@
 % Please edit documentation in R/setup.R
 \name{use_precommit}
 \alias{use_precommit}
-\title{Set up pre-commit}
+\title{Get started with pre-commit}
 \usage{
 use_precommit(
   config_source = getOption("precommit.config_source"),
@@ -10,6 +10,7 @@ use_precommit(
   legacy_hooks = "forbid",
   open = rstudioapi::isAvailable(),
   install_hooks = TRUE,
+  ci = getOption("precommit.ci", "native"),
   root = here::here()
 )
 }
@@ -20,7 +21,8 @@ config file will be hard-copied into \code{root}. If \code{NULL}, we check if
 \code{\link[rprojroot:find_root_file]{rprojroot::find_package_root_file()}}, and resort to an appropriate default
 config. See section 'Copying an existing config file'.}
 
-\item{force}{Whether to replace an existing config file.}
+\item{force}{Whether or not to overwrite an existing ci config file (only
+relevant for \code{ci = "gha"}).}
 
 \item{legacy_hooks}{How to treat hooks already in the repo which are not
 managed by pre-commit. "forbid", the default, will cause  \code{use_precommit()}
@@ -34,13 +36,21 @@ RStudio. Otherwise, we recommend manually inspecting the file.}
 \item{install_hooks}{Whether to install environments for all available hooks.
 If \code{FALSE}, environments are installed with first commit.}
 
+\item{ci}{Specifies which continuous integration service to use. See
+\code{vignette("ci", package = "precommit")} for details. Defaults to
+\code{getOption("precommit.ci", "native")}, which is set to
+\code{"native"} on package loading (if unset). \code{"native"} sets up
+\href{https://pre-commit.ci}{pre-commit.ci}. Alternatively, \code{"gha"} can be used
+to set up \href{https://github.com/features/actions}{GitHub Actions}. Set value
+to \code{NULL} if you don't want to use a continuous integration.}
+
 \item{root}{The path to the root directory of your project.}
 }
 \value{
 \code{NULL} (invisibly). The function is called for its side effects.
 }
 \description{
-Get started.
+This function sets up pre-commit for your git repo.
 }
 \section{When to call this function?}{
 
@@ -72,8 +82,8 @@ You can use an existing \code{.pre-commit-config.yaml} file when initializing
 pre-commit with \code{\link[=use_precommit]{use_precommit()}} using the argument \code{config_source} to
 copy an existing config file into your repo. This argument defaults to the R
 option \code{precommit.config_source}, so you may want to set this option in
-your \code{.Rprofile} for convenience. Note that this is \strong{not} equivalent
-to the \code{--config} option in the CLI command \verb{pre-commit install} and similar,
+your \code{.Rprofile} for convenience. Note that this is \strong{not} equivalent to the
+\code{--config} option in the CLI command \verb{pre-commit install} and similar,
 which do \emph{not} copy a config file into a project root (and allow to put it
 under version control), but rather link it in some more or less transparent
 way.

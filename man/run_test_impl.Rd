@@ -4,7 +4,16 @@
 \alias{run_test_impl}
 \title{Implement a test run}
 \usage{
-run_test_impl(path_executable, path_candidate, error_msg, cmd_args, copy)
+run_test_impl(
+  path_executable,
+  path_candidate,
+  error_msg,
+  msg,
+  cmd_args,
+  artifacts,
+  file_transformer,
+  env
+)
 }
 \arguments{
 \item{path_executable}{The path to the executable bash script.}
@@ -15,16 +24,17 @@ executable.}
 \item{error_msg}{An expected error message. If no error is expected, this
 can be \code{NULL}. In that case, the \code{comparator} is applied.}
 
+\item{msg}{The expected stdout message. If \code{NULL}, this check is omitted.}
+
 \item{cmd_args}{More arguments passed to the file. Pre-commit handles it as
 described \href{https://pre-commit.com/#arguments-pattern-in-hooks}{here}.}
 
-\item{copy}{Path with files to copy to the temp directory where the test
-is run. If the target destination relative to the temp dir where the hook
-is tested is not identical to the path from where a file should be copied,
-you can pass a named vector. The name is the target directory relative to
-the temp directory where the hook is executed (the temp directory will be
-the working directory at that time) and the value is the path that points
-to the place where the artifact is currently stored.}
+\item{artifacts}{Path with artifact files to copy to the temp directory root where
+the test is run. If you don't target the root, this can be a named vector
+of length one where the name is the target location relative to the
+temporary location and the value is the source of the file.}
+
+\item{env}{The environment variables to set with \code{\link[base:system2]{base::system2()}}.}
 }
 \description{
 Implement a test run

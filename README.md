@@ -8,8 +8,7 @@
 [![CRAN
 status](https://www.r-pkg.org/badges/version/precommit)](https://CRAN.R-project.org/package=precommit)
 [![Lifecycle:
-experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
-
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R build
 status](https://github.com/lorenzwalthert/precommit/workflows/R-CMD-check/badge.svg)](https://github.com/lorenzwalthert/precommit/actions)
 <!-- badges: end -->
@@ -21,12 +20,26 @@ making sure you have not forgotten a comma, brace or quote.
 
 The goal of this package is to twofold:
 
-  - Provide a set of hooks that are useful when your git repo contains R
-    code. You can find them under `vignette("available-hooks")`.
+-   Provide a [set of
+    hooks](https://lorenzwalthert.github.io/precommit/articles/available-hooks.html)
+    that are useful when your git repo contains R code.
 
-  - Provide [usethis](https://github.com/r-lib/usethis)-like
+-   Provide [usethis](https://github.com/r-lib/usethis)-like
     functionality for common tasks such as installation and set-up and
     config file modification.
+
+The following online docs are available:
+
+-   [latest CRAN release](https://lorenzwalthert.github.io/precommit/).
+
+-   [GitHub development
+    version](https://lorenzwalthert.github.io/precommit/dev/).
+
+These only cover the functionality added on top of the pre-commit
+framework by this package. Everything else is covered in the extensive
+[online documentation](https://pre-commit.com) of the pre-commit
+framework itself, including how to create hooks for actions like
+`git push` or `git checkout`, create local hooks etc.
 
 ## Installation
 
@@ -37,23 +50,25 @@ install.packages("precommit")
 ```
 
 To access pre-commit functionality from R, you also need to install the
-[pre-commit framework](https://pre-commit.com). The following command
-line methods are tested to work with this R package:
+[pre-commit framework](https://pre-commit.com) on which the hook from
+this repo build. The following command line methods are tested to work
+with this R package (and accessing them from outside R is easier and use
+is slightly faster):
 
-  - `$ pip3 install pre-commit --user` (macOS, Linux and Windows)
+-   `$ pip3 install pre-commit --user` (macOS, Linux and Windows)
     **outside** a conda or virtual environment.
 
-  - `$ brew install pre-commit` (macOS).
+-   `$ brew install pre-commit` (macOS).
 
 Alternatively, you can handle the installation from R using
 [miniconda](https://docs.conda.io/en/latest/miniconda.html):
 
-  - install miniconda if you don’t have it already:
-    `reticulate::install_miniconda()`. This needs reticulate \>= 1.14.
+-   install miniconda if you don’t have it already:
+    `reticulate::install_miniconda()`. This needs reticulate >= 1.14.
 
-  - install the pre-commit framework with
+-   install the pre-commit framework with
     `precommit::install_precommit()` into the conda environment
-    `r-precommit`.
+    `r-precommit`. Do not install other packages into this environment.
 
 Then, in a fresh R session:
 
@@ -89,7 +104,7 @@ If all hooks pass, the commit is made. You can also [temporarily disable
 hooks](https://pre-commit.com/#temporarily-disabling-hooks). If you
 succeed, it should look like this:
 
-<img src="man/figures/screenshot.png" width="639" />
+![](man/figures/screenshot.png)<!-- -->
 
 See the hooks provided by this repo under `vignette("available-hooks")`.
 You can also add other hooks from other repos, by extending the
@@ -106,50 +121,41 @@ To update the hook revisions, run `precommit::autoupdate()`.
 
 ## Caution
 
-  - **Do not abort while hooks are running in RStudio git tab.**
-    Non-staged changes are stashed to a temp directory and when you
-    abort in RStudio, these changes are not brought back to you repo.
-    Upvote [this issue](https://github.com/rstudio/rstudio/issues/6471)
-    to change this. We hope that in the future, the changes will be
-    recovered in RStudio too. Note that this is only an issue with
-    RStudio. Stashes are restored when you abort a `git commit` with
-    `INT` (e.g. Ctrl+C) on the command line. To restore stashes,
-    manually after hitting *abort* in the RStudio git tab, you can `git
-    apply /path/to/patch_with_id` whereas you find the patch under your
-    pre-commit cache, which is usually under `$HOME/.cache/pre-commit/`.
+**Do not abort while hooks are running in RStudio git tab.** Non-staged
+changes are stashed to a temp directory and when you abort in RStudio,
+these changes are not brought back to you repo. Upvote [this
+issue](https://github.com/rstudio/rstudio/issues/6471) to change this.
+We hope that in the future, the changes will be recovered in RStudio
+too. Note that this is only an issue with RStudio. Stashes are restored
+when you abort a `git commit` with `INT` (e.g. Ctrl+C) on the command
+line. To restore stashes, manually after hitting *abort* in the RStudio
+git tab, you can `git apply /path/to/patch_with_id` whereas you find the
+patch under your pre-commit cache, which is usually under
+`$HOME/.cache/pre-commit/`.
 
-  - Because R is not officially supported as a language in the
-    pre-commit framework (yet), there is no R package dependency
-    management for the R hooks provided in this repo. If an R package
-    that is needed by a hook is not yet installed, you might get this
-    error:
+## Update
 
-<!-- end list -->
+If you used {precommit} before, upgrade these three components for
+maximal compatibility:
 
-``` r
-# > Error in loadNamespace(name) : there is no package called ‘__name_of_package__’
-```
+-   the R package {precommit} from CRAN with
+    `install.packages("precommit")`.
 
-In that case, just install the package with `install.packages()` once
-and try to commit again. All R dependencies of the pre-commit hooks
-provided in this repo are suggested dependencies of this R package, so
-if you want to install them all, just `install.packages("precommit",
-dependencies = c("Imports", "Suggests"))`.
+-   the hook revisions in your `.pre-commit-config.yaml` with
+    `precommit::autoupdate()`. Hook revision updates are released in
+    sync with R package updates (exception: Patch releases for hooks
+    don’t have a corresponding CRAN release).
 
-## Documentation
-
-The [online
-documentation](https://lorenzwalthert.github.io/precommit/index.html) of
-this package only covers the functionality added on top of pre-commit by
-this package. Everything else is covered in the extensive [online
-documentation](https://pre-commit.com) of the pre-commit framework
-itself, including how to:
-
-  - create pre-push hooks
-
-  - create local hooks
-
-  - and more
+-   the upstream pre-commit framework. Use the update utilities provided
+    by your installation method (i.e. `pip3` or `brew`). If you chose
+    conda, you can use `precommit::update_precommit()`. If you don’t
+    remember the installation method you chose, just choose any and then
+    upgrade. We’ll warn you if you have multiple executables installed
+    and point you to their location so you can get rid of all but one.
+    You can check the version of you executable with
+    `precommit::version_precommit()`. Updates to the pre-commit
+    framework are not released in sync with the R or hook revision
+    updates.
 
 ## Uninstallation
 

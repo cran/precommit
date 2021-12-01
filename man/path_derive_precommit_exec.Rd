@@ -7,17 +7,17 @@
 path_derive_precommit_exec()
 }
 \description{
-All these functions return "" if search was not successful.
+Returns "" if search was not successful, the path otherwise.
 }
 \section{Heuristic}{
 
 \itemize{
 \item First check if there is an executable on the \verb{$PATH} using
 \code{\link[=path_derive_precommit_exec_path]{path_derive_precommit_exec_path()}}
-\item If not, check if we can find one in a conda environment with
-\code{\link[=path_derive_precommit_exec_conda]{path_derive_precommit_exec_conda()}}.
 \item Search os dependent for other possible locations for common installation
 methods.
+\item If not, check if we can find one in a conda environment with
+\code{\link[=path_derive_precommit_exec_conda]{path_derive_precommit_exec_conda()}}. Do this last as it's the slowest.
 }
 }
 

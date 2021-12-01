@@ -9,34 +9,52 @@ run_test(
   file_name = hook_name,
   suffix = ".R",
   error_msg = NULL,
+  msg = NULL,
   cmd_args = NULL,
-  copy = NULL
+  artifacts = NULL,
+  file_transformer = function(files) files,
+  env = character()
 )
 }
 \arguments{
-\item{hook_name}{The name of the hook in \verb{bin/}.}
+\item{hook_name}{The name of the hook in \verb{inst/hooks/exported/}, without
+file extension.}
 
-\item{file_name}{The file to test in \verb{tests/in} (without extension).}
+\item{file_name}{The file to test in \verb{tests/in} (without extension). Can be
+a named vector of length one where the name is the target location relative
+to the temporary location and the value is the source of the file.}
 
 \item{suffix}{The suffix of \code{file_name}.}
 
 \item{error_msg}{An expected error message. If no error is expected, this
 can be \code{NULL}. In that case, the \code{comparator} is applied.}
 
+\item{msg}{The expected stdout message. If \code{NULL}, this check is omitted.}
+
 \item{cmd_args}{More arguments passed to the file. Pre-commit handles it as
 described \href{https://pre-commit.com/#arguments-pattern-in-hooks}{here}.}
 
-\item{copy}{Path with files to copy to the temp directory where the test
-is run. If the target destination relative to the temp dir where the hook
-is tested is not identical to the path from where a file should be copied,
-you can pass a named vector. The name is the target directory relative to
-the temp directory where the hook is executed (the temp directory will be
-the working directory at that time) and the value is the path that points
-to the place where the artifact is currently stored.}
+\item{artifacts}{Path with artifact files to copy to the temp directory root where
+the test is run. If you don't target the root, this can be a named vector
+of length one where the name is the target location relative to the
+temporary location and the value is the source of the file.}
+
+\item{file_transformer}{A function that takes the file names as input and is
+ran right before the hook script is invoked, returning the path to the
+files, potentially modified (if renamed). This can be useful if you need to
+make in-place modifications to the file, e.g. to test hooks that operate on
+\code{.Rprofile}. You can't have different names for different tests on that
+file because it must be called \code{.Rprofile} all the time. And R CMD check
+seems to remove hidden files, so we must also rename it. The transformation
+is also applied to a temp copy of the reference file before a comparison is
+made.}
+
+\item{env}{The environment variables to set with \code{\link[base:system2]{base::system2()}}.}
 }
 \description{
 Tests for the executables used as pre-commit hooks via \code{entrypoint} in
-\code{.pre-commit-config.yaml}.
+\code{.pre-commit-config.yaml}. Set's the env variable \code{R_PRECOMMIT_HOOK_ENV} to
+when running.
 }
 \details{
 Two potential outcomes of a hooks are pass or fail. This is reflected on the
@@ -47,7 +65,7 @@ We check if the executable passes as follows:
 \item If we expect success (by setting \code{error_msg} to \code{NULL}), we make sure
 nothing was written to sterr and the file content does not change.
 \item If we expect failure, it can be due to changed file or due to failed
-executable. To check for failed executalble, we set \code{error_msg} to
+executable. To check for failed executable, we set \code{error_msg} to
 the message we expect. To check changed file content, we set \code{error_msg} to
 \code{NA}.
 }
