@@ -1,3 +1,32 @@
+# precommit v0.2.1
+
+This is a maintenance release on the request of CRAN (#337) and to improve 
+experience with the `language: r` switch conducted in `v0.2.0`. Also note that projects using {renv} and RStudio are not very compatible with hook 
+versions > 0.1.3.9014. For that reason, `autoupdate()` results in downgrading the hook versions in these situations (#346).
+
+**API Changes**
+
+
+* The argument `--no-warn-cache` in the `style-files` and the `roxygenize` hook 
+  is deprecated and will be removed in a future release. Please remove it from 
+  your `.pre-commit-config.yaml` (#340. #341).
+
+**Other changes**
+
+* `style-files` hook fails more informatively if required package is not listed
+  in `additional_dependencies:` (#333).
+* configure all git operations to use LF (#337).
+* `deps-in-desc` always excludes `README.md` (#336).
+* Document timeout and other problems with pre-commit.ci (#335).
+* simplify `roxygenize` problem handling (#338).
+* More executables on macOS are detected (#344).
+* Only hard dependencies are generated with 
+  `snippet_generate("additional-deps-roxygenize")` (#344)
+
+Thanks to all people who contributed to this release: 
+
+[&#x0040;lorenzwalthert](https://github.com/lorenzwalthert), [&#x0040;pat-s](https://github.com/pat-s), and [&#x0040;smingerson](https://github.com/smingerson).
+
 # precommit v0.2.0
 
 
@@ -14,7 +43,7 @@ all existing hooks. This means two things:
   `>= 2.13.0`). See *Installation/Update** below (#233, #250, #260, #264, #273,
   #315, #313, #308, #301, #300, #295, #285, #328).
 * support for continuous integration via [pre-commit.ci](https://pre-commit.ci)
-  and [GitHub Actions]([GitHub Actions](https://github.com/pre-commit/action), 
+  and [GitHub Actions](https://github.com/pre-commit/action)), 
   that is, running the pre-commit hooks as part of a CI pipeline. This
   means that hook passing can be enforced for pull requests, even if the creator
   did not run the hooks locally. Further, the diff from running the hooks is 
@@ -22,7 +51,7 @@ all existing hooks. This means two things:
   hook problems in some cases (e.g. `style-files`). See `vignette("ci")` for a
   comparison of the two services (#318). 
   
-*API changes**
+**API changes**
 
 *  `use_precommit()` gains a new argument `ci` defaulting to `"native"` (for 
   [pre-commit](https://pre-commit.ci)) to set up continuous
@@ -119,13 +148,11 @@ A big hand to all the contributors of this release:
 [&#x0040;arbues6](https://github.com/arbues6), 
 [&#x0040;b4D8](https://github.com/b4D8), 
 [&#x0040;bart1](https://github.com/bart1), 
-[&#x0040;dhersz](https://github.com/dhersz), 
-[&#x0040;joelnitta](https://github.com/joelnitta), 
+[&#x0040;dhersz](https://github.com/dhersz), [&#x0040;joelnitta](https://github.com/joelnitta), 
 [&#x0040;jucor](https://github.com/jucor),
 [&#x0040;lorenzwalthert](https://github.com/lorenzwalthert), [&#x0040;lukasfeick-sw](https://github.com/lukasfeick-sw), [&#x0040;MarkMc1089](https://github.com/MarkMc1089), 
 [&#x0040;njtierney](https://github.com/njtierney), 
-[&#x0040;pat-s](https://github.com/pat-s), 
-[&#x0040;pwildenhain](https://github.com/pwildenhain), and [&#x0040;rossdrucker](https://github.com/rossdrucker)
+[&#x0040;pat-s](https://github.com/pat-s), [&#x0040;pwildenhain](https://github.com/pwildenhain), and [&#x0040;rossdrucker](https://github.com/rossdrucker)
 
 For previous versions of `NEWS.md` with news bullet per patch release, see the 
 [latest `NEWS.md` before gathering](https://github.com/lorenzwalthert/precommit/blob/7a8740714ab868d20e981b8b80898d7be050e34e/NEWS.md).

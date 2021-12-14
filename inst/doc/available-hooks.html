@@ -55,7 +55,7 @@
 <p>Arguments for the hooks are specified as described in the <a href="https://pre-commit.com/#passing-arguments-to-hooks">pre-commit.com documentation</a>.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> You can specify arguments like this:</p>
 <pre><code>repos:
 -   repo: https://github.com/lorenzwalthert/precommit
-    rev: v0.2.0
+    rev: v0.2.1
     hooks:
     -   id: lintr
         args: [--warn-only, --key=value]</code></pre>
@@ -76,12 +76,8 @@
 <pre><code>  id: style-files
   args: [--style_pkg=pkg.with.style.guide, --style_fun=exported.style.function]</code></pre>
 <ul>
-<li>If no permanent <code>{R.cache}</code> cache exists, the hook emits a warning which you can silence with <code>--no-warn-cache</code>.</li>
-</ul>
-<pre><code>  id: style-files
-  args: [--no-warn-cache]</code></pre>
-<ul>
-<li>Argument <code>cache-root</code> is passed to <code>options()</code> to set <code>styler.cache_root</code>. Default value: <code>styler-perm</code>. The argument determines the sub-directory under the {R.cache} cache directory that {styler} uses. If you want {styler} to auto-clean up caches older than 6 days, set this to <code>&quot;styler&quot;</code>. For more information, see <code>help(&quot;caching&quot;, package = &quot;styler&quot;)</code>.</li>
+<li><p>The argument <code>--no-warn-cache</code> is deprecated and will be removed in a future release. Please remove it from your <code>.pre-commit-config.yaml</code>.</p></li>
+<li><p>Argument <code>cache-root</code> is passed to <code>options()</code> to set <code>styler.cache_root</code>. Default value: <code>styler-perm</code>. The argument determines the sub-directory under the {R.cache} cache directory that {styler} uses. If you want {styler} to auto-clean up caches older than 6 days, set this to <code>&quot;styler&quot;</code>. For more information, see <code>help(&quot;caching&quot;, package = &quot;styler&quot;)</code>.</p></li>
 </ul>
 <pre><code>  id: style-files
   args: [--cache-root=styler]</code></pre>
@@ -106,7 +102,7 @@
 <h2><code>spell-check</code></h2>
 <p>Checks spelling with <code>spelling::spell_check_files()</code>.</p>
 <p><strong>Excluded files</strong></p>
-<p>When you invoke <code>precommit::use_precommit()</code> and <code>.pre-commit-config.yaml</code> is written to your repo (unless you specify <code>config_source</code> otherwise), we copy the expression in the <code>exclude:</code> key from spell check hook the default repository’s configuration (i.e. the <code>.pre-commit-hooks.yaml</code> file in <a href="https://github.com/lorenzwalthert/precommit" class="uri">https://github.com/lorenzwalthert/precommit</a>) into your config file, so you can easily add or remove some files. As of v0.2.0, the following regex is used to exclude files following the <a href="https://pre-commit.com/#regular-expressions">verbose python regex syntax</a>:</p>
+<p>When you invoke <code>precommit::use_precommit()</code> and <code>.pre-commit-config.yaml</code> is written to your repo (unless you specify <code>config_source</code> otherwise), we copy the expression in the <code>exclude:</code> key from spell check hook the default repository’s configuration (i.e. the <code>.pre-commit-hooks.yaml</code> file in <a href="https://github.com/lorenzwalthert/precommit" class="uri">https://github.com/lorenzwalthert/precommit</a>) into your config file, so you can easily add or remove some files. As of v0.2.1, the following regex is used to exclude files following the <a href="https://pre-commit.com/#regular-expressions">verbose python regex syntax</a>:</p>
 <pre><code>(?x)^(
 .*\.[rR]|
 .*\.feather|
@@ -141,9 +137,7 @@ data/.*|
 </div>
 <div id="roxygenize" class="section level2">
 <h2><code>roxygenize</code></h2>
-<p>A hook to run <code>roxygen2::roxygenize()</code>. Makes sure you commit your <code>.Rd</code> changes with the source changes. To take advantage of caching, you don’t need to run <code>roxygen2::roxygenize()</code> manually anymore. If no permanent <code>{R.cache}</code> cache exists, the hook emits a warning which you can silence with <code>--no-warn-cache</code>.</p>
-<pre><code>  id: royxgenize
-  args: [--no-warn-cache] </code></pre>
+<p>A hook to run <code>roxygen2::roxygenize()</code>. Makes sure you commit your <code>.Rd</code> changes with the source changes. To take advantage of caching, you don’t need to run <code>roxygen2::roxygenize()</code> manually anymore. The argument <code>--no-warn-cache</code> is deprecated and will be removed in a future release. Please remove it from your <code>.pre-commit-config.yaml</code>.</p>
 <p>Because the hook will write the version of {roxygen2} to <code>DESCRIPTON</code>, you should either make sure the version you use when you call {roxygen2} interactively matches the one from in {precommit} or simply not run {roxygen2} manually.</p>
 <p>If you specify additional roclets through the <code>Roxygen:</code> field in <code>DESCRIPTION</code>, e.g. from <a href="https://github.com/r-lib/pkgapi">{pkgapi}</a> you must specify the dependencies explicitly such that <code>renv::install()</code> understands it, e.g.</p>
 <pre><code>  id: roxygenize
@@ -154,10 +148,9 @@ data/.*|
 </div>
 <div id="deps-in-desc" class="section level2">
 <h2><code>deps-in-desc</code></h2>
-<p>Checks if packages used with the <code>pkgname::fun()</code> syntax are listed in your DESCRIPTION file. Flag <code>allow_private_imports</code> lets the user specify that private imports into the package namespace are tolerable, e.g. <code>somepkg:::x()</code>. Flag not set by default, i.e. the hook will fail if such a call is found.</p>
+<p>Checks if packages used with the <code>pkgname::fun()</code> syntax are listed in your DESCRIPTION file. Note that <code>README.Rmd</code> is never checked. Flag <code>allow_private_imports</code> lets the user specify that private imports into the package namespace are tolerable, e.g. <code>somepkg:::x()</code>. Flag not set by default, i.e. the hook will fail if such a call is found.</p>
 <pre><code>  id: deps-in-desc 
   args: [--allow_private_imports] </code></pre>
-<p>Note that for Rmd or Rnw documents, we use <code>knitr::purl()</code> to get the R code and code chunk headers cannot contain code that has dependencies outside the header, see also <a href="https://github.com/yihui/knitr/issues/1938">yihui/knitr#1938</a>.</p>
 <p>This hook does not modify the file <code>DESCRIPTION</code> because the user should decide for each package if it should go to <code>Imports:</code> or <code>Suggests:</code>, which can be done easily with <code>usethis::use_package()</code>.</p>
 </div>
 <div id="use-tidy-description" class="section level2">

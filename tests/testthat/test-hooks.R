@@ -93,6 +93,16 @@ run_test("style-files",
   )
 )
 
+run_test("style-files",
+  file_name = "style-files-cmd",
+  suffix = "-fail.R",
+  error_msg = "must be listed in `additional_dependencies:`",
+  cmd_args = c(
+    "--style_pkg=blubliblax", "--style_fun=tidyverse_style", "--cache-root=styler"
+  )
+)
+
+
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### no-browser-statement                                                    ####
 # success
@@ -128,7 +138,11 @@ run_test("parsable-R",
 # failure
 run_test("parsable-R", suffix = "-fail.R", error_msg = "not parsable")
 
-run_test("parsable-R", suffix = "-fail.Rmd", error_msg = "not parsable")
+run_test(
+  "parsable-R",
+  suffix = "-fail.Rmd",
+  error_msg = "parsable-R-fail.Rmd is not parsable"
+)
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### spell-check                                                             ####
@@ -197,6 +211,14 @@ run_test("deps-in-desc",
   suffix = "-success.Rmd", error_msg = NULL,
   artifacts = c("DESCRIPTION" = test_path("in/DESCRIPTION"))
 )
+
+# README.Rmd is excluded
+run_test("deps-in-desc",
+  "README.Rmd",
+  suffix = "", error_msg = NULL,
+  artifacts = c("DESCRIPTION" = test_path("in/DESCRIPTION-no-deps.dcf"))
+)
+
 
 
 # Rnw
@@ -273,7 +295,7 @@ run_test("roxygenize",
     "DESCRIPTION" = test_path("in/DESCRIPTION-no-deps.dcf")
   ),
   file_transformer = function(files) {
-    git2r::init()
+    git_init()
     git2r::add(path = files)
     files
   }
@@ -293,7 +315,7 @@ run_test("readme-rmd-rendered",
       content_2 <- readLines(files[2])
       Sys.sleep(2)
       writeLines(content_2, files[2])
-      git2r::init()
+      git_init()
       git2r::add(path = files)
     }
     files
@@ -311,7 +333,7 @@ run_test("readme-rmd-rendered",
       content_2 <- readLines(files[2])
       Sys.sleep(2)
       writeLines(content_2, files[2])
-      git2r::init()
+      git_init()
       git2r::add(path = files)
     }
     files
@@ -331,7 +353,7 @@ run_test("readme-rmd-rendered",
       content_2 <- readLines(files[2])
       Sys.sleep(2)
       writeLines(content_2, files[2])
-      git2r::init()
+      git_init()
       git2r::add(path = files[1])
     }
     files
@@ -345,7 +367,7 @@ run_test("readme-rmd-rendered",
   error_msg = NULL,
   msg = NULL,
   file_transformer = function(files) {
-    git2r::init()
+    git_init()
     git2r::add(path = files[1])
     files
   }
@@ -358,7 +380,7 @@ run_test("readme-rmd-rendered",
   error_msg = NULL,
   msg = NULL,
   file_transformer = function(files) {
-    git2r::init()
+    git_init()
     git2r::add(path = files[1])
     files
   }
