@@ -1,8 +1,15 @@
+# precommit v0.2.2
+
+- Fixing more CRAN issues (#348).
+- Use RSMP for all packages (#348).
+
 # precommit v0.2.1
 
 This is a maintenance release on the request of CRAN (#337) and to improve 
-experience with the `language: r` switch conducted in `v0.2.0`. Also note that projects using {renv} and RStudio are not very compatible with hook 
-versions > 0.1.3.9014. For that reason, `autoupdate()` results in downgrading the hook versions in these situations (#346).
+experience with the `language: r` switch conducted in `v0.2.0`. In particular, 
+note that projects using {renv} and RStudio are not very compatible with hook 
+versions > 0.1.3.9014 and `autoupdate()` results in downgrading the hook 
+versions (#346).
 
 **API Changes**
 
