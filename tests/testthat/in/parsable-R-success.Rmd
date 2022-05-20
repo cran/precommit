@@ -5,4 +5,30 @@ output: rmarkdown::html_document
 
 ```{r}
 call()
+is_nice <- FALSE
+```
+
+```{r, eval = is_nice}
+parsable + code
+```
+
+```{r, purl=FALSE}
+ fas / fk 12 -
+```
+
+
+```{nonR chunk}
+this is 
+```
+
+```{f , x= 2}
+this is 
+```
+
+```{f, x= 2}
+this is 
+```
+
+```{ f, x= 2}
+this is 
 ```

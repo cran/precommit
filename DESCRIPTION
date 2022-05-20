@@ -1,6 +1,6 @@
 Package: precommit
 Title: Pre-Commit Hooks
-Version: 0.2.2
+Version: 0.3.0
 Author: Lorenz Walthert
 Maintainer: Lorenz Walthert <lorenz.walthert@icloud.com>
 Description: Useful git hooks for R building on top of the multi-language
@@ -19,9 +19,9 @@ Suggests: desc, digest, docopt (>= 0.7.1), git2r, glue, knitr, lintr,
         2.0.0)
 VignetteBuilder: knitr
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
 SystemRequirements: git
 NeedsCompilation: no
-Packaged: 2021-12-14 23:07:57 UTC; lorenz
+Packaged: 2022-05-20 06:52:31 UTC; lorenz
 Repository: CRAN
-Date/Publication: 2021-12-14 23:50:02 UTC
+Date/Publication: 2022-05-20 07:30:14 UTC

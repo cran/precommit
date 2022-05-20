@@ -14,12 +14,12 @@ run_test("style-files",
 # fail
 run_test("style-files",
   suffix = "-fail-changed.R", cmd_args = c("--cache-root=styler"),
-  error_msg = NA
+  std_err = NA
 )
 
 run_test("style-files",
   suffix = "-fail-parse.R", cmd_args = c("--cache-root=styler"),
-  error_msg = "unexpected"
+  std_err = "unexpected"
 )
 
 # success with cmd args
@@ -76,18 +76,36 @@ run_test("style-files",
   cmd_args = c("--include_roxygen_examples=FALSE", "--cache-root=styler")
 )
 
+run_test("style-files",
+  file_name = "style-files",
+  suffix = "-ignore-success.R",
+  cmd_args = c(
+    "--cache-root=styler",
+    '--ignore-start="^# styler: off$"',
+    '--ignore-stop="^# styler: on$"'
+  )
+)
+
+run_test("style-files",
+  file_name = "style-files",
+  suffix = "-ignore-fail.R",
+  cmd_args = "--cache-root=styler",
+  std_err = "Invalid stylerignore sequences"
+)
+
+
 # fail with cmd args
 run_test("style-files",
   file_name = "style-files-cmd",
   suffix = "-success.R",
-  error_msg = "scope must be one",
+  std_err = "scope must be one",
   cmd_args = c("--scope=space", "--cache-root=styler")
 )
 
 run_test("style-files",
   file_name = "style-files-cmd",
   suffix = "-fail.R",
-  error_msg = NA,
+  std_err = NA,
   cmd_args = c(
     "--style_pkg=styler", "--style_fun=tidyverse_style", "--cache-root=styler"
   )
@@ -96,7 +114,7 @@ run_test("style-files",
 run_test("style-files",
   file_name = "style-files-cmd",
   suffix = "-fail.R",
-  error_msg = "must be listed in `additional_dependencies:`",
+  std_err = "must be listed in `additional_dependencies:`",
   cmd_args = c(
     "--style_pkg=blubliblax", "--style_fun=tidyverse_style", "--cache-root=styler"
   )
@@ -109,16 +127,31 @@ run_test("style-files",
 run_test(
   "no-browser-statement",
   suffix = "-success.R",
-  error_msg = NULL
+  std_err = NULL
 )
 
 # failure
 run_test(
   "no-browser-statement",
   suffix = "-fail.R",
-  error_msg = "contains a `browser()` statement."
+  std_err = "contains a `browser()` statement."
 )
 
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### no-debug-statement                                                    ####
+# success
+run_test(
+  "no-debug-statement",
+  suffix = "-success.R",
+  std_err = NULL
+)
+
+# failure
+run_test(
+  "no-debug-statement",
+  suffix = "-fail.R",
+  std_err = "contains a `debug()` or `debugonce()` statement."
+)
 
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
@@ -127,35 +160,35 @@ run_test(
 # success
 run_test("parsable-R",
   suffix = "-success.R",
-  error_msg = NULL
+  std_err = NULL
 )
 
 run_test("parsable-R",
   suffix = "-success.Rmd",
-  error_msg = NULL
+  std_err = NULL
 )
 
 # failure
-run_test("parsable-R", suffix = "-fail.R", error_msg = "not parsable")
+run_test("parsable-R", suffix = "-fail.R", std_err = "not parsable")
 
 run_test(
   "parsable-R",
   suffix = "-fail.Rmd",
-  error_msg = "parsable-R-fail.Rmd is not parsable"
+  std_err = "parsable-R-fail.Rmd is not parsable"
 )
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### spell-check                                                             ####
 # success
-run_test("spell-check", suffix = "-success.md", error_msg = NULL)
+run_test("spell-check", suffix = "-success.md", std_err = NULL)
 
 # basic failure
-run_test("spell-check", suffix = "-fail.md", error_msg = "Spell check failed")
+run_test("spell-check", suffix = "-fail.md", std_err = "Spell check failed")
 
 # success with wordlist
 run_test("spell-check",
   suffix = "-wordlist-success.md",
-  error_msg = NULL,
+  std_err = NULL,
   artifacts = c("inst/WORDLIST" = test_path("in/WORDLIST"))
 )
 
@@ -169,32 +202,32 @@ run_test("spell-check", suffix = "-language-success.md", cmd_args = "--lang=en_G
 ### depds-in-desc                                                           ####
 # succeed (call to library that is in description)
 run_test("deps-in-desc",
-  suffix = "-success.R", error_msg = NULL,
+  suffix = "-success.R", std_err = NULL,
   artifacts = c("DESCRIPTION" = test_path("in/DESCRIPTION"))
 )
 
 # fail (call to library that is not in description)
 run_test("deps-in-desc",
-  suffix = "-fail.R", error_msg = "Dependency check failed",
+  suffix = "-fail.R", std_err = "Dependency check failed",
   artifacts = c("DESCRIPTION" = test_path("in/DESCRIPTION"))
 )
 
 # with :::
 run_test("deps-in-desc",
   "deps-in-desc-dot3",
-  suffix = "-fail.R", error_msg = "Dependency check failed",
+  suffix = "-fail.R", std_err = "Dependency check failed",
   artifacts = c("DESCRIPTION" = test_path("in/DESCRIPTION"))
 )
 
 run_test("deps-in-desc",
   "deps-in-desc-dot3",
-  suffix = "-success.R", error_msg = NULL,
+  suffix = "-success.R", std_err = NULL,
   artifacts = c("DESCRIPTION" = test_path("in/DESCRIPTION"))
 )
 
 run_test("deps-in-desc",
   "deps-in-desc-dot3",
-  suffix = "-fail.R", error_msg = NULL,
+  suffix = "-fail.R", std_err = NULL,
   artifacts = c("DESCRIPTION" = test_path("in/DESCRIPTION")),
   cmd_args = "--allow_private_imports"
 )
@@ -202,20 +235,21 @@ run_test("deps-in-desc",
 # Rmd
 run_test("deps-in-desc",
   "deps-in-desc",
-  suffix = "-fail.Rmd", error_msg = "Dependency check failed",
+  suffix = "-fail.Rmd", std_err = "Dependency check failed",
+  std_out = "in file `deps-in-desc-fail.Rmd`",
   artifacts = c("DESCRIPTION" = test_path("in/DESCRIPTION"))
 )
 
 run_test("deps-in-desc",
   "deps-in-desc",
-  suffix = "-success.Rmd", error_msg = NULL,
+  suffix = "-success.Rmd", std_err = NULL,
   artifacts = c("DESCRIPTION" = test_path("in/DESCRIPTION"))
 )
 
 # README.Rmd is excluded
 run_test("deps-in-desc",
   "README.Rmd",
-  suffix = "", error_msg = NULL,
+  suffix = "", std_err = NULL,
   artifacts = c("DESCRIPTION" = test_path("in/DESCRIPTION-no-deps.dcf"))
 )
 
@@ -224,13 +258,13 @@ run_test("deps-in-desc",
 # Rnw
 run_test("deps-in-desc",
   "deps-in-desc",
-  suffix = "-fail.Rnw", error_msg = "Dependency check failed",
+  suffix = "-fail.Rnw", std_err = "Dependency check failed",
   artifacts = c("DESCRIPTION" = test_path("in/DESCRIPTION"))
 )
 
 run_test("deps-in-desc",
   "deps-in-desc",
-  suffix = "-success.Rnw", error_msg = NULL,
+  suffix = "-success.Rnw", std_err = NULL,
   artifacts = c("DESCRIPTION" = test_path("in/DESCRIPTION"))
 )
 
@@ -244,7 +278,7 @@ if (Sys.getenv("GITHUB_WORKFLOW") != "Hook tests") {
   expect_true(rlang::is_installed("R.cache"))
   run_test("deps-in-desc",
     "Rprofile",
-    suffix = "", error_msg = "Dependency check failed",
+    suffix = "", std_err = "Dependency check failed",
     artifacts = c("DESCRIPTION" = test_path("in/DESCRIPTION")),
     file_transformer = function(files) {
       writeLines("R.cache::findCache", files)
@@ -257,7 +291,7 @@ if (Sys.getenv("GITHUB_WORKFLOW") != "Hook tests") {
 
   run_test("deps-in-desc",
     "Rprofile",
-    suffix = "", error_msg = NULL,
+    suffix = "", std_err = NULL,
     artifacts = c("DESCRIPTION" = test_path("in/DESCRIPTION")),
     file_transformer = function(files) {
       writeLines("utils::head", files)
@@ -276,25 +310,45 @@ if (Sys.getenv("GITHUB_WORKFLOW") != "Hook tests") {
 # success
 run_test("lintr",
   suffix = "-success.R",
-  error_msg = NULL
+  std_err = NULL
 )
 
 # failure
-run_test("lintr", suffix = "-fail.R", error_msg = "not lint free")
+run_test("lintr", suffix = "-fail.R", std_err = "not lint free")
 
 # warning
 run_test(
   "lintr",
-  suffix = "-fail.R", cmd_args = "--warn_only", error_msg = NULL
+  suffix = "-fail.R", cmd_args = "--warn_only", std_err = NULL
 )
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### roxygenize                                                              ####
+# with outdated Rd present
+run_test("roxygenize",
+  file_name = c("man/flie.Rd" = "flie.Rd"),
+  suffix = "",
+  std_err = NA,
+  std_out = "Writing NAMESPACE",
+  artifacts = c(
+    "DESCRIPTION" = test_path("in/DESCRIPTION-no-deps.dcf"),
+    "R/roxygenize.R" = test_path("in/roxygenize.R")
+  ),
+  file_transformer = function(files) {
+    git_init()
+    git2r::add(path = files)
+    # hack to add artifact to trigger diff_requires_roxygenize()
+    git2r::add(path = fs::path(fs::path_dir(fs::path_dir(files[1])), "R"))
+    files
+  }
+)
+
+
+# without Rd present
 run_test("roxygenize",
   file_name = c("R/roxygenize.R" = "roxygenize.R"),
   suffix = "",
-  error_msg = NULL,
-  msg = "Writing flie.Rd",
+  std_err = "Please commit the new `.Rd` files",
   artifacts = c(
     "DESCRIPTION" = test_path("in/DESCRIPTION-no-deps.dcf")
   ),
@@ -306,14 +360,82 @@ run_test("roxygenize",
 )
 
 
+# with up to date rd present
+run_test("roxygenize",
+  file_name = c("man/flie.Rd" = "flie-true.Rd"),
+  suffix = "",
+  std_err = "Writing NAMESPACE",
+  artifacts = c(
+    "DESCRIPTION" = test_path("in/DESCRIPTION-no-deps.dcf"),
+    "R/roxygenize.R" = test_path("in/roxygenize.R")
+  ),
+  file_transformer = function(files) {
+    git_init()
+    git2r::add(path = files)
+    # hack to add artifact to trigger diff_requires_roxygenize()
+    git2r::add(path = fs::path(fs::path_dir(fs::path_dir(files[1])), "R"))
+    files
+  },
+  expect_success = TRUE
+)
+
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### codemeata                                                               ####
+run_test("codemeta-description-update",
+  file_name = c("codemeta.json"),
+  suffix = "",
+  std_err = "No `DESCRIPTION` found in repository.",
+  std_out = NULL,
+)
+
+run_test("codemeta-description-update",
+  file_name = c("DESCRIPTION"),
+  suffix = "",
+  std_err = "No `codemeta.json` found in repository.",
+  std_out = NULL,
+)
+
+
+# outdated
+run_test("codemeta-description-update",
+  file_name = c("DESCRIPTION", "codemeta.json"),
+  suffix = "",
+  std_err = "out of date",
+  std_out = NULL,
+  file_transformer = function(files) {
+    if (length(files) > 1) {
+      # transformer is called once on all files and once per file
+      content_2 <- readLines(files[1])
+      Sys.sleep(2)
+      writeLines(content_2, files[1])
+    }
+    files
+  }
+)
+
+# succeed
+run_test("codemeta-description-update",
+  file_name = c("DESCRIPTION", "codemeta.json"),
+  suffix = "",
+  file_transformer = function(files) {
+    if (length(files) > 1) {
+      # transformer is called once on all files and once per file
+      content_2 <- readLines(files[2])
+      Sys.sleep(2)
+      writeLines(content_2, files[2])
+    }
+    files
+  }
+)
+
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### readme-rmd-rendered                                                     ####
 if (has_git()) {
   run_test("readme-rmd-rendered",
     file_name = c("README.md", "README.Rmd"),
     suffix = "",
-    error_msg = "out of date",
-    msg = NULL,
+    std_err = "out of date",
+    std_out = NULL,
     file_transformer = function(files) {
       if (length(files) > 1) {
         # transformer is called once on all files and once per file
@@ -332,8 +454,8 @@ if (has_git()) {
   run_test("readme-rmd-rendered",
     file_name = c("README.Rmd", "README.md"),
     suffix = "",
-    error_msg = "should be both staged",
-    msg = NULL,
+    std_err = "should be both staged",
+    std_out = NULL,
     file_transformer = function(files) {
       if (length(files) > 1) {
         # transformer is called once on all files and once per file
@@ -351,8 +473,8 @@ if (has_git()) {
   run_test("readme-rmd-rendered",
     file_name = "README.md",
     suffix = "",
-    error_msg = NULL,
-    msg = NULL,
+    std_err = NULL,
+    std_out = NULL,
     file_transformer = function(files) {
       git_init()
       git2r::add(path = files[1])
@@ -364,8 +486,8 @@ if (has_git()) {
   run_test("readme-rmd-rendered",
     file_name = "README.Rmd",
     suffix = "",
-    error_msg = NULL,
-    msg = NULL,
+    std_err = NULL,
+    std_out = NULL,
     file_transformer = function(files) {
       git_init()
       git2r::add(path = files[1])

@@ -7,6 +7,7 @@ test_that("snippet generation works", {
     out <- capture_output(snippet_generate("additional-deps-roxygenize")),
     NA,
   )
+  expect_equal(out, "")
   usethis::use_package("styler")
   expect_error(
     out <- capture_output(snippet_generate("additional-deps-roxygenize")),
@@ -83,8 +84,12 @@ test_that("Pre-commit CI setup works", {
 })
 
 
-test_that("Autoupdate is not conducted when renv present", {
+test_that("Autoupdate is not conducted when renv present in incompatible setup", {
   skip_on_cran()
+
+  # mock old pre-commit and renv versions
+  mockery::stub(ensure_renv_precommit_compat, "version_precommit", "2.13.0")
+
   local_test_setup(
     git = TRUE, use_precommit = TRUE, install_hooks = FALSE, open = FALSE
   )
@@ -94,16 +99,23 @@ test_that("Autoupdate is not conducted when renv present", {
   writeLines("", "renv.lock")
 
   # should downgrade rev
-  expect_warning(autoupdate(root = getwd()), "Autoupdate aborted")
+  expect_error(
+    ensure_renv_precommit_compat(
+      package_version_renv = package_version("0.13.0"), root = getwd()
+    ),
+    "Please update"
+  )
   downgraded <- rev_read() %>%
     rev_as_pkg_version()
-  expect_true(downgraded < initial)
+  expect_true(downgraded == initial)
 
-  # simulate removing {renv} should updagradd
+  # simulate removing {renv} should be updated
   fs::file_delete("renv.lock")
-  expect_warning(autoupdate(root = getwd()), NA)
-  after_upgrade <- rev_read() %>%
-    rev_as_pkg_version()
-
-  expect_true(after_upgrade > downgraded)
+  expect_warning(
+    ensure_renv_precommit_compat(
+      package_version("0.13.0"),
+      root = getwd()
+    ),
+    NA
+  )
 })

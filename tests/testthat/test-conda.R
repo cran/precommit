@@ -5,15 +5,11 @@ if (!on_cran()) {
     expect_error(install_precommit(force = TRUE), NA)
   })
 
-  test_that("conda 3.10 should now work", {
-    expect_true(Sys.Date() < as.Date("2022-03-30"))
-  })
-
   test_that("can use pre-commit", {
     tempdir <- local_test_setup(quiet = FALSE, install_hooks = FALSE)
     expect_message(
       use_precommit(open = FALSE, force = TRUE, install_hooks = FALSE, root = tempdir),
-      "to get the latest"
+      "R specific hooks"
     )
     expect_message(
       use_precommit(open = FALSE, force = FALSE, install_hooks = FALSE, root = tempdir),
@@ -99,7 +95,11 @@ if (!on_cran()) {
     )
 
     # when there is no pre-commit.yaml anymore
-    suppressMessages(use_precommit(open = FALSE, force = TRUE, install_hooks = FALSE, root = tempdir))
+    suppressMessages(
+      use_precommit(
+        open = FALSE, force = TRUE, install_hooks = FALSE, root = tempdir
+      )
+    )
     fs::file_delete(fs::path(tempdir, ".pre-commit-config.yaml"))
     expect_message(
       uninstall_precommit(scope = "repo", root = tempdir),
@@ -142,7 +142,7 @@ if (!on_cran()) {
         example_remote_config(),
         open = FALSE, force = TRUE, install_hooks = FALSE, root = tempdir
       ),
-      "to get the latest"
+      "R specific hooks"
     )
   })
 

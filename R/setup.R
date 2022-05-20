@@ -12,6 +12,8 @@
 #'   it's been placed in your repo as well as
 #'   [pre-commit.ci](https://pre-commit.ci) (if `ci = "native"`). The default is
 #'   `TRUE` when working in RStudio.
+#' @param autoupdate Whether or not to run [autoupdate()] as part of this
+#'   function call.
 #' @inheritParams fallback_doc
 #' @inheritParams use_precommit_config
 #' @inheritSection use_precommit_config Copying an existing config file
@@ -45,6 +47,7 @@ use_precommit <- function(config_source = getOption("precommit.config_source"),
                           open = rstudioapi::isAvailable(),
                           install_hooks = TRUE,
                           ci = getOption("precommit.ci", "native"),
+                          autoupdate = install_hooks,
                           root = here::here()) {
   rlang::arg_match(legacy_hooks, c("forbid", "allow", "remove"))
   assert_is_installed()
@@ -54,7 +57,7 @@ use_precommit <- function(config_source = getOption("precommit.config_source"),
     config_source, force, root,
     open = FALSE, verbose = FALSE
   )
-  autoupdate(root)
+  if (autoupdate) autoupdate(root)
   install_repo(root, install_hooks, legacy_hooks)
   if (open) {
     open_config(root)
@@ -146,6 +149,7 @@ use_ci <- function(ci = getOption("precommit.ci", "native"),
 autoupdate <- function(root = here::here()) {
   withr::with_dir(root, {
     assert_correct_upstream_repo_url()
+    ensure_renv_precommit_compat(root = root)
     out <- call_precommit("autoupdate")
     if (out$exit_status == 0) {
       cli::cli_alert_success(paste0(
@@ -157,52 +161,60 @@ autoupdate <- function(root = here::here()) {
         preamble = "Running precommit autoupdate failed."
       )
     }
-    if (unname(read.dcf("DESCRIPTION")[, "Package"]) == "precommit") {
-      message(paste0(
-        "`autoupdate()` ran in {precommit} package directory, skipping ",
-        "`ensure_renv_precommit_compat()`"
-      ))
-    } else {
-      ensure_renv_precommit_compat(root = root)
-    }
     invisible(out$exit_status)
   })
 }
 
-ensure_renv_precommit_compat <- function(root = here::here()) {
-  withr::local_dir(root)
-  path_config <- ".pre-commit-config.yaml"
-  config_lines <- readLines(path_config, encoding = "UTF-8")
-  has_renv <- fs::file_exists("renv.lock")
-  if (!has_renv) {
-    return()
-  }
+ensure_renv_precommit_compat <- function(package_version_renv = utils::packageVersion("renv"),
+                                         root = here::here()) {
+  is_precommit <- suppressWarnings(rlang::with_handlers(
+    unname(read.dcf("DESCRIPTION")[, "Package"]) == "precommit",
+    error = function(e) FALSE
+  ))
+  if (is_precommit) {
+    message(paste0(
+      "`autoupdate()` ran in {precommit} package directory, skipping ",
+      "`ensure_renv_precommit_compat()`"
+    ))
+  } else {
+    withr::local_dir(root)
+    path_config <- ".pre-commit-config.yaml"
+    config_lines <- readLines(path_config, encoding = "UTF-8")
+    has_renv <- fs::file_exists("renv.lock")
+    if (!has_renv) {
+      return()
+    }
 
-  rev <- rev_read(path_config)
-  rlang::with_handlers(
-    {
-      rev <- rev_as_pkg_version(rev)
-      maximal_rev <- package_version("0.1.3.9014")
-      if (rev > maximal_rev) {
-        rlang::warn(paste0(
-          "It seems like you want to use {renv} and {precommit} in the same ",
-          "repo. This is not well supported for users of RStudio and ",
-          "`precommit > 0.1.3.9014` at the moment (details: ",
-          "https://github.com/lorenzwalthert/precommit/issues/342). ",
-          "Autoupdate aborted and `rev:` in `.pre-commit-config.yaml` set to ",
-          "a version compatible with {renv}."
-        ))
-        config_lines <- gsub(
-          paste0("^ *rev *: *", "v", as.character(rev)),
-          "    rev: v0.1.3.9014",
-          config_lines
-        )
-        withr::local_options(encoding = "native.enc")
-        writeLines(enc2utf8(config_lines), path_config, useBytes = TRUE)
-      }
-    },
-    error = function(e) NULL
-  )
+    rev <- rev_read(path_config)
+    should_fail <- rlang::with_handlers(
+      {
+        rev <- rev_as_pkg_version(rev)
+        maximal_rev <- package_version("0.1.3.9014")
+        if (rev > maximal_rev &&
+          package_version_renv < "0.14.0-148" &&
+          package_version(version_precommit()) <= "2.16.0"
+        ) {
+          TRUE
+        } else {
+          FALSE
+        }
+      },
+      error = function(e) FALSE
+    )
+    if (should_fail) {
+      rlang::abort(paste0(
+        "It seems like you want to use {renv} and {precommit} in the same ",
+        "repo. This is not well supported for users of RStudio with ",
+        "`pre-commit <= 2.16.0`, `renv < 0.14.0-148` and ",
+        "`precommit > 0.1.3.9014` at the moment (details: ",
+        "https://github.com/lorenzwalthert/precommit/issues/342).\n\n",
+        "Please update update the R package {renv}, the upstream framework ",
+        "pre-commit (instructions at ",
+        "https://lorenzwalthert.github.io/precommit/dev/articles/precommit.html#update)",
+        "the R package {precommit} and try again `precommit::autoupdate()`"
+      ))
+    }
+  }
 }
 
 
@@ -240,10 +252,9 @@ snippet_generate <- function(snippet = "",
       "\n"
     ))
     deps <- desc::desc_get_deps()
-    hard_dependencies <- deps[(deps$type %in% c("Depends", "Imports")), "package"]
-    hard_dependencies_vec <- hard_dependencies %>%
+    hard_dependencies <- deps[(deps$type %in% c("Depends", "Imports")), "package"] %>%
       setdiff("R")
-    if (length(hard_dependencies_vec) < 1) {
+    if (length(hard_dependencies) < 1) {
       cli::cli_alert_success(paste0(
         "According to {.code DESCRIPTION}`, there are no hard dependencies of ",
         "your package. You are set."
@@ -261,7 +272,8 @@ snippet_generate <- function(snippet = "",
     cli::cli_alert_info(paste0(
       "Note that CI services like {.url pre-commit.ci} have build-time ",
       "restrictions and installing the above dependencies may exceed those, ",
-      "resulting in a timeout. See ",
+      "resulting in a timeout. In addition, system dependencies are not ",
+      "supported for {.url pre-commit.ci}. See ",
       '{.code vignette("ci", package = "precommit")} for details and solutions.'
     ))
     remote_deps <- rlang::with_handlers(

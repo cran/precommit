@@ -66,6 +66,7 @@ ensure_named <- function(x, candidate_name = NULL, f = identity) {
 #' @param hook_id The id of the hook for which we want the relative cache
 #'   directory.
 #' @family hook script helpers
+#' @keywords internal
 #' @export
 dirs_R.cache <- function(hook_id) {
   file.path("precommit", hook_id)
@@ -93,7 +94,11 @@ rev_read <- function(path = ".pre-commit-config.yaml", repo = hooks_repo) {
   config <- yaml::read_yaml(path)
   idx <- purrr::map_chr(config$repos, ~ .x$repo) %>%
     grep(repo, ., fixed = TRUE)
-  config$repos[[idx]]$rev
+  if (length(idx) < 1) {
+    return(NA)
+  } else {
+    config$repos[[idx]]$rev
+  }
 }
 
 rev_as_pkg_version <- function(rev) {
