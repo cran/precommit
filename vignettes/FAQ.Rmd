@@ -1,6 +1,8 @@
 ---
 title: "FAQ"
 output: rmarkdown::html_vignette
+description: > 
+  Common questions and answers for pre-commit users.
 vignette: >
   %\VignetteIndexEntry{FAQ}
   %\VignetteEncoding{UTF-8}
@@ -17,6 +19,18 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
+
+## It's broken. Missing packages etc. How do I fix it?
+
+Update the hook revisions with `$ pre-commit autoupdate` or
+`> precommit::autoupdate()`. If this does not help, please follow the
+[update
+instructions](https://lorenzwalthert.github.io/precommit/dev/articles/precommit.html#update)
+in the package documentation. If that does not work, run
+`$ pre-commit clean` to clean the pre-commit cache. Then, try again.
+Although you could also clear the {renv} cache, this should only be a
+strategy of last resort, as it may break other {renv} projects on your
+machine and you'd have to do some re-storing there.
 
 ## How does it work? What's the magic?
 

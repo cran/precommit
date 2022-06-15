@@ -334,6 +334,17 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
+<div id="its-broken.-missing-packages-etc.-how-do-i-fix-it" class="section level2">
+<h2>It’s broken. Missing packages etc. How do I fix it?</h2>
+<p>Update the hook revisions with <code>$ pre-commit autoupdate</code>
+or <code>&gt; precommit::autoupdate()</code>. If this does not help,
+please follow the <a href="https://lorenzwalthert.github.io/precommit/dev/articles/precommit.html#update">update
+instructions</a> in the package documentation. If that does not work,
+run <code>$ pre-commit clean</code> to clean the pre-commit cache. Then,
+try again. Although you could also clear the {renv} cache, this should
+only be a strategy of last resort, as it may break other {renv} projects
+on your machine and you’d have to do some re-storing there.</p>
+</div>
 <div id="how-does-it-work-whats-the-magic" class="section level2">
 <h2>How does it work? What’s the magic?</h2>
 <p>No magic. Git <a href="https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks">provides

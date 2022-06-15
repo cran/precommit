@@ -1,5 +1,7 @@
 ---
 title: "Continuous Integration"
+description: > 
+  Understand how pre-commit can be used in a continuous integration settting.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Continuous Integration}
@@ -72,7 +74,8 @@ below.
 
 **Cons:**
 
--   You need to authenticate the [pre-commit.ci](https://pre-commit.ci) App in GitHub.
+-   You need to authenticate the [pre-commit.ci](https://pre-commit.ci)
+    App in GitHub.
 
 -   Limitations for the roxygenize hook:
 

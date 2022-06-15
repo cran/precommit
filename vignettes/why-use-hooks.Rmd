@@ -1,6 +1,8 @@
 ---
 title: "Why is this useful?"
 output: rmarkdown::html_vignette
+description: > 
+  Understand why we build this and why we think it's useful.
 vignette: >
   %\VignetteIndexEntry{why-use-hooks}
   %\VignetteEncoding{UTF-8}
@@ -75,8 +77,9 @@ code in other CI services to perform these tasks:
     for the maintainers of {precommit}.
 
 -   **Independent.** pre-commit is not bound to GitHub, but runs on your
-    local computer upon commit, and [pre-commit.ci](https://pre-commit.ci) will
-    support on other git hosts than GitHub in the future.
+    local computer upon commit, and
+    [pre-commit.ci](https://pre-commit.ci) will support on other git
+    hosts than GitHub in the future.
 
 Have an idea for a hook? Please [file an
 issue](https://github.com/lorenzwalthert/precommit/issues).
