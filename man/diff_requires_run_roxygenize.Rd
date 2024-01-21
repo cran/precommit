@@ -4,10 +4,10 @@
 \alias{diff_requires_run_roxygenize}
 \title{Check if we should run roxygen.}
 \usage{
-diff_requires_run_roxygenize(root = here::here())
+diff_requires_run_roxygenize(root = ".")
 }
 \arguments{
-\item{root}{The root of project.}
+\item{root}{The root of the git repo.}
 }
 \value{
 A logical vector of length 1.
@@ -27,6 +27,7 @@ diff_requires_run_roxygenize()
 Other hook script helpers: 
 \code{\link{dirs_R.cache}()},
 \code{\link{may_require_permanent_cache}()},
+\code{\link{precommit_docopt}()},
 \code{\link{robust_purl}()},
 \code{\link{roxygen_assert_additional_dependencies}()},
 \code{\link{roxygenize_with_cache}()}

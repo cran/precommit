@@ -43,7 +43,8 @@ run_test <- function(hook_name,
                      artifacts = NULL,
                      file_transformer = function(files) files,
                      env = character(),
-                     expect_success = is.null(std_err)) {
+                     expect_success = is.null(std_err),
+                     read_only = FALSE) {
   withr::local_envvar(list(R_PRECOMMIT_HOOK_ENV = "1"))
   path_executable <- fs::dir_ls(system.file(
     fs::path("hooks", "exported"),
@@ -62,7 +63,8 @@ run_test <- function(hook_name,
     artifacts = ensure_named(artifacts),
     file_transformer = file_transformer,
     env = env,
-    expect_success = expect_success
+    expect_success = expect_success,
+    read_only = read_only
   )
 }
 
@@ -84,6 +86,8 @@ run_test <- function(hook_name,
 #' @param expect_success Whether or not an exit code 0 is expected. This can
 #'   be derived from `std_err`, but sometimes, non-empty stderr does not mean
 #'   error, but just a message.
+#' @param read_only If `TRUE` and `artifacts` are not `NULL`, then assert that hook
+#'   did not modify the artifacts.
 #' @keywords internal
 run_test_impl <- function(path_executable,
                           path_candidate,
@@ -93,8 +97,10 @@ run_test_impl <- function(path_executable,
                           artifacts,
                           file_transformer,
                           env,
-                          expect_success) {
-  tempdir <- fs::dir_create(fs::file_temp())
+                          expect_success,
+                          read_only) {
+  # ensure cannonical /private/var/... not /var/... on macOS
+  tempdir <- fs::path(normalizePath((fs::dir_create(fs::file_temp()))))
   copy_artifacts(artifacts, tempdir)
   # if name set use this, otherwise put in root
   path_candidate_temp <- fs::path(tempdir, names(path_candidate))
@@ -127,6 +133,13 @@ run_test_impl <- function(path_executable,
     std_out,
     exit_status
   )
+  if (isTRUE(read_only) && !is.null(artifacts)) {
+    purrr::iwalk(artifacts, function(reference_path, temp_path) {
+      artifact_before_hook <- readLines(testthat::test_path(reference_path))
+      artifact_after_hook <- readLines(fs::path_join(c(tempdir, temp_path)))
+      testthat::expect_equal(artifact_before_hook, artifact_after_hook)
+    })
+  }
 }
 
 
@@ -145,6 +158,11 @@ hook_state_create <- function(tempdir,
   withr::local_dir(tempdir)
   files <- fs::path_rel(path_candidate_temp, tempdir)
   # https://stat.ethz.ch/pipermail/r-devel/2018-February/075507.html
+
+  # quote any individual filenames with spaces so the shell identifies them
+  # each as a single term
+  files <- shQuote(files)
+
   system2(paste0(Sys.getenv("R_HOME"), "/bin/Rscript"),
     args = as.character(c(path_executable, cmd_args, files)),
     stderr = path_stderr, stdout = path_stdout, env = env
@@ -256,7 +274,7 @@ not_conda <- function() {
 #' @param git Whether or not to init git in the local directory.
 #' @param autoupdate Whether or not to run [autoupdate()] as part of this
 #'   fixture.
-#' @param use_precommmit Whether or not to [use_precommit()].
+#' @param use_precommit Whether or not to [use_precommit()].
 #' @keywords internal
 local_test_setup <- function(git = TRUE,
                              use_precommit = FALSE,
@@ -291,7 +309,7 @@ local_test_setup <- function(git = TRUE,
 #' @param n The number of times we should try
 #' @keywords internal
 generate_uninstalled_pkg_name <- function(n = 10) {
-  additional_pkg <- paste0("package", digest::digest(Sys.time()))
+  additional_pkg <- paste0("package", rlang::hash(Sys.time()))
   if (rlang::is_installed(additional_pkg)) {
     if (n > 0) {
       generate_uninstalled_pkg_name(n - 1)

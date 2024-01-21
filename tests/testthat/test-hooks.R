@@ -4,6 +4,26 @@
 # success
 run_test("use-tidy-description", "DESCRIPTION", suffix = "")
 
+# in sub directory with correct root
+run_test("use-tidy-description",
+  "DESCRIPTION",
+  suffix = "",
+  cmd_args = "--root=rpkg",
+  artifacts = c("rpkg/DESCRIPTION" = test_path("in/DESCRIPTION"))
+)
+
+
+
+# in sub directory with incorrect root
+# Need to generate the directoy `rpkg` but without DESCRIPTION file.
+run_test("use-tidy-description",
+  "DESCRIPTION",
+  suffix = "",
+  cmd_args = "--root=rpkg",
+  std_err = "No `DESCRIPTION` found in repository.",
+  artifacts = c("rpkg/README.md" = test_path("in/README.md"))
+)
+
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### style-files                                                             ####
 
@@ -120,7 +140,6 @@ run_test("style-files",
   )
 )
 
-
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### no-browser-statement                                                    ####
 # success
@@ -135,6 +154,22 @@ run_test(
   "no-browser-statement",
   suffix = "-fail.R",
   std_err = "contains a `browser()` statement."
+)
+
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### no-print-statement                                                      ####
+# success
+run_test(
+  "no-print-statement",
+  suffix = "-success.R",
+  std_err = NULL
+)
+
+# failure
+run_test(
+  "no-print-statement",
+  suffix = "-fail.R",
+  std_err = "contains a `print()` statement."
 )
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
@@ -178,6 +213,7 @@ run_test(
   std_err = "1 1"
 )
 
+
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### spell-check                                                             ####
 # success
@@ -213,6 +249,35 @@ run_test("deps-in-desc",
   artifacts = c("DESCRIPTION" = test_path("in/DESCRIPTION"))
 )
 
+# in sub directory with wrong root
+run_test("deps-in-desc",
+  suffix = "-fail.R", std_err = "Could not find R package",
+  file_transformer = function(files) {
+    fs::path_abs(fs::file_move(files, "rpkg"))
+  },
+  artifacts = c("rpkg/DESCRIPTION" = test_path("in/DESCRIPTION"))
+)
+
+# in sub directory with correct root
+run_test("deps-in-desc",
+  cmd_args = "--root=rpkg",
+  suffix = "-fail.R", std_err = "Dependency check failed",
+  file_transformer = function(files) {
+    fs::path_abs(fs::file_move(files, "rpkg"))
+  },
+  artifacts = c("rpkg/DESCRIPTION" = test_path("in/DESCRIPTION"))
+)
+
+# in sub directory with correct root
+run_test("deps-in-desc",
+  cmd_args = "--root=rpkg",
+  suffix = "-success.R", std_err = NULL,
+  file_transformer = function(files) {
+    fs::path_abs(fs::file_move(files, "rpkg"))
+  },
+  artifacts = c("rpkg/DESCRIPTION" = test_path("in/DESCRIPTION"))
+)
+
 # with :::
 run_test("deps-in-desc",
   "deps-in-desc-dot3",
@@ -237,7 +302,7 @@ run_test("deps-in-desc",
 run_test("deps-in-desc",
   "deps-in-desc",
   suffix = "-fail.Rmd", std_err = "Dependency check failed",
-  std_out = "in file `deps-in-desc-fail.Rmd`",
+  std_out = "deps-in-desc-fail.Rmd`: ttyzp",
   artifacts = c("DESCRIPTION" = test_path("in/DESCRIPTION"))
 )
 
@@ -344,8 +409,47 @@ run_test("roxygenize",
   }
 )
 
+# with outdated Rd present in correct root
+run_test("roxygenize",
+  file_name = c("rpkg/man/flie.Rd" = "flie.Rd"),
+  suffix = "",
+  std_err = NA,
+  cmd_args = "--root=rpkg",
+  std_out = "Writing NAMESPACE",
+  artifacts = c(
+    "rpkg/DESCRIPTION" = test_path("in/DESCRIPTION-no-deps.dcf"),
+    "rpkg/R/roxygenize.R" = test_path("in/roxygenize.R")
+  ),
+  file_transformer = function(files) {
+    withr::local_dir("rpkg")
+    git_init()
+    git2r::add(path = files)
+    # hack to add artifact to trigger diff_requires_roxygenize()
+    git2r::add(path = fs::path(fs::path_dir(fs::path_dir(files[1])), "R"))
+    files
+  }
+)
+
 
 # without Rd present
+run_test("roxygenize",
+  file_name = c("rpkg1/R/roxygenize.R" = "roxygenize.R"),
+  suffix = "",
+  cmd_args = "--root=rpkg1",
+  std_err = "Please commit the new `.Rd` files",
+  artifacts = c(
+    "rpkg1/DESCRIPTION" = test_path("in/DESCRIPTION-no-deps.dcf"),
+    "rpkg2/R/roxygenize.R" = test_path("in/roxygenize.R")
+  ),
+  file_transformer = function(files) {
+    withr::local_dir("rpkg1")
+    git_init()
+    git2r::add(path = files)
+    files
+  }
+)
+
+# with Rd present in wrong root
 run_test("roxygenize",
   file_name = c("R/roxygenize.R" = "roxygenize.R"),
   suffix = "",
@@ -428,6 +532,94 @@ run_test("codemeta-description-update",
     files
   }
 )
+
+# succeed in correct root
+run_test("codemeta-description-update",
+  file_name = c(
+    "rpkg/DESCRIPTION" = "DESCRIPTION",
+    "rpkg/codemeta.json" = "codemeta.json"
+  ),
+  cmd_args = "--root=rpkg",
+  suffix = "",
+  file_transformer = function(files) {
+    if (length(files) > 1) {
+      # transformer is called once on all files and once per file
+      content_2 <- readLines(files[2])
+      Sys.sleep(2)
+      writeLines(content_2, files[2])
+    }
+    files
+  }
+)
+
+# # fail in wrong root
+run_test("codemeta-description-update",
+  file_name = c(
+    "rpkg/DESCRIPTION" = "DESCRIPTION",
+    "rpkg/codemeta.json" = "codemeta.json",
+    "rpkg2/codemeta.json" = "README.md"
+  ),
+  cmd_args = "--root=rpkg2",
+  std_err = "No `DESCRIPTION` found in repository.",
+  suffix = "",
+  file_transformer = function(files) {
+    if (length(files) > 1) {
+      # transformer is called once on all files and once per file
+      content_2 <- readLines(files[2])
+      Sys.sleep(2)
+      writeLines(content_2, files[2])
+    }
+    files
+  }
+)
+
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### pgkdown check                                                           ####
+
+# success index
+run_test("pkgdown",
+  file_name = c(
+    "man/autoudpate.Rd" = "autoupdate.Rd",
+    "_pkgdown.yml" = "_pkgdown-index.yml",
+    "DESCRIPTION" = "DESCRIPTION"
+  ),
+  suffix = "", std_err = NULL
+)
+
+# failed index
+run_test("pkgdown",
+  file_name = c(
+    "man/flie-true.Rd" = "flie-true.Rd",
+    "_pkgdown.yml" = "_pkgdown-index.yml",
+    "DESCRIPTION" = "DESCRIPTION"
+  ),
+  suffix = "",
+  std_err = "topic must be a known"
+)
+
+# failed articles
+run_test("pkgdown",
+  file_name = c(
+    "vignettes/pkgdown.Rmd" = "pkgdown.Rmd",
+    "_pkgdown.yml" = "_pkgdown-articles.yml",
+    "DESCRIPTION" = "DESCRIPTION"
+  ),
+  suffix = "",
+  std_err = "why-use-hooks"
+)
+
+# success index and article
+run_test("pkgdown",
+  file_name = c(
+    "man/autoudpate.Rd" = "autoupdate.Rd",
+    "vignettes/pkgdown.Rmd" = "pkgdown.Rmd",
+    "_pkgdown.yml" = "_pkgdown-index-articles.yml",
+    "DESCRIPTION" = "DESCRIPTION"
+  ),
+  suffix = "",
+  std_err = NULL
+)
+
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### readme-rmd-rendered                                                     ####

@@ -29,13 +29,13 @@ document.addEventListener('DOMContentLoaded', function(e) {
 </script>
 
 <style type="text/css">
-  code{white-space: pre-wrap;}
-  span.smallcaps{font-variant: small-caps;}
-  span.underline{text-decoration: underline;}
-  div.column{display: inline-block; vertical-align: top; width: 50%;}
-  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-  ul.task-list{list-style: none;}
-    </style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
 
 
 
@@ -251,23 +251,33 @@ just randomly order constraints.</li>
 </ul>
 </div>
 <div id="hooks-with-dependencies" class="section level2">
-<h2>Hooks with dependencies:</h2>
-<p><strong>Read and write</strong></p>
+<h2>Hooks with dependencies</h2>
+<div id="read-and-write" class="section level3">
+<h3>Read and write</h3>
 <ul>
-<li>styler: should run before roxygen because of caching. Caches.</li>
-<li>roxygen. Caches.</li>
-<li>codemeta: must be before tidy description.</li>
-<li>use-tidy-description.</li>
+<li>style-files - caches; should run before roxygenize because of the
+caching</li>
+<li>roxygenize - caches</li>
+<li>codemeta-description-updated - must be before
+use-tidy-description</li>
+<li>use-tidy-description</li>
+<li>spell-check - updates <code>inst/WORDLIST</code>; should run after
+roxygenize</li>
 </ul>
-<p><strong>Just read:</strong></p>
+</div>
+<div id="read-only" class="section level3">
+<h3>Read only</h3>
 <ul>
-<li>spell check; run after roxygen</li>
-<li>lintr: should run after styler.</li>
-<li>readme-rmd-rendered: Must run after styler.</li>
+<li>lintr - should run after styler</li>
+<li>readme-rmd-rendered - must run after styler</li>
 <li>parsable-R</li>
 <li>no-browser-statement</li>
-<li>deps in desc.</li>
+<li>no-print-statement</li>
+<li>no-debug-statement</li>
+<li>deps-in-desc</li>
+<li>pkgdown</li>
 </ul>
+</div>
 </div>
 
 

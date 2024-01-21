@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(eval = FALSE)
 
 ## -----------------------------------------------------------------------------
@@ -10,7 +10,7 @@ knitr::opts_chunk$set(eval = FALSE)
 #  # * if you want introduce pre-commit to this repo
 #  precommit::use_precommit()
 
-## ---- echo = FALSE, eval = TRUE-----------------------------------------------
+## ----echo = FALSE, eval = TRUE------------------------------------------------
 knitr::include_graphics(here::here("man/figures/screenshot.png"))
 
 ## -----------------------------------------------------------------------------

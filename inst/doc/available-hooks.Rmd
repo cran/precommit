@@ -52,7 +52,7 @@ repos:
     rev: {rev}
     hooks:
     -   id: lintr
-        args: [--warn-only, --key=value]
+        args: [--warn_only, --key=value]
 "))
 ```
 
@@ -146,6 +146,14 @@ Guarantees you that you don't accidentally commit code with a
 
 This hook does not modify files.
 
+## `no-print-statement`
+
+Guarantees you that you don't accidentally commit code with a
+`print()` statement in it.
+
+This hook does not modify files. This hook was added in version
+0.3.2.9020.
+
 ## `no-debug-statement`
 
 Guarantees you that you don't accidentally commit code with a `debug()`
@@ -223,16 +231,44 @@ This hook does not modify input files, but writes to `.Rd` files in
 `man/`, `NAMESPACE` and potentially others depending on which roxygen
 roclets you specified in `DESCRIPTION`.
 
+**Arguments**
+
+<!-- -->
+
+    id: roxygenize
+    args: [--root=<R package root>] 
+
+-   Argument `root` specifies the directory in the git repo that
+    contains the R package. Defaults to `.` since for most R package git
+    repos, the git and R package root coincide. Added in version
+    0.3.3.00000.
+
 ## `deps-in-desc`
 
 Checks if packages used with the `pkgname::fun()` syntax are listed in
-your DESCRIPTION file. Note that `README.Rmd` is never checked. Flag
-`allow_private_imports` lets the user specify that private imports into
-the package namespace are tolerable, e.g. `somepkg:::x()`. Flag not set
-by default, i.e. the hook will fail if such a call is found.
+your DESCRIPTION file. Note that `README.Rmd` is never checked.
+
+**Arguments**
+
+-   Flag `allow_private_imports` lets the user specify that private
+    imports into the package namespace are tolerable, e.g.
+    `somepkg:::x()`. Flag not set by default, i.e. the hook will fail if
+    such a call is found.
+
+<!-- -->
 
       id: deps-in-desc 
       args: [--allow_private_imports] 
+
+-   Argument `root` specifies the directory in the git repo that
+    contains the R package. Defaults to `.` since for most R package git
+    repos, the git and R package root coincide. Added in version
+    0.3.2.9000.
+
+<!-- -->
+
+    id: deps-in-desc 
+    args: [--root=<R package root>] 
 
 This hook does not modify the file `DESCRIPTION` because the user should
 decide for each package if it should go to `Imports:` or `Suggests:`,
@@ -244,6 +280,18 @@ A hook to run `usethis::use_tidy_description()` to ensure dependencies
 are ordered alphabetically and fields are in standard order.
 
 This hook does modify the file `DESCRIPTION`.
+
+**Arguments**
+
+<!-- -->
+
+    id: use-tidy-description
+    args: [--root=<R package root>] 
+
+-   Argument `root` specifies the directory in the git repo that
+    contains the R package. Defaults to `.` since for most R package git
+    repos, the git and R package root coincide. Added in version
+    0.3.3.00000.
 
 ## `lintr`
 
@@ -272,3 +320,31 @@ i.e. remind you to run `codemetar::write_codemeta()` in order to keep
 `codemeta.json` in sync with `DESCRIPTION`.
 
 This hook does not modify any file.
+
+**Arguments**
+
+<!-- -->
+
+    id: codemeta-description-updated
+    args: [--root=<R package root>] 
+
+-   Argument `root` specifies the directory in the git repo that
+    contains the R package. Defaults to `.` since for most R package git
+    repos, the git and R package root coincide. Added in version
+    0.3.3.00000.
+
+
+## `pkgdown`
+
+Check if your {pkgdown} config file (e.g. `_pkgdown.yml` in your root) has the 
+correct entries for references and articles. 
+This hook skips the time-consuming parts of building the index and reference and
+only performs the validation. Hence we don't rely on the extensive dependency 
+graph of {pkgdown} being installed, including packages with heavy build-time 
+dependencies and system libraries.
+
+For this check, we rely on the the global R package library and require all 
+development dependencies of the package you want to run this hook for to be 
+installed, as well as {pkgdown} (without its dependencies) and {mockery}. 
+
+This hook does not modify files. Added in version 0.3.2.9003.

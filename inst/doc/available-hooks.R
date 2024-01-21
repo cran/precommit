@@ -1,4 +1,4 @@
-## ---- echo = FALSE, output = "asis", comment = "", message = FALSE------------
+## ----echo = FALSE, output = "asis", comment = "", message = FALSE-------------
 library(magrittr)
 rev <- paste0("v", packageVersion("precommit"))
 cat(glue::glue("
@@ -7,10 +7,10 @@ repos:
     rev: {rev}
     hooks:
     -   id: lintr
-        args: [--warn-only, --key=value]
+        args: [--warn_only, --key=value]
 "))
 
-## ---- echo = FALSE, comment = ""----------------------------------------------
+## ----echo = FALSE, comment = ""-----------------------------------------------
 readLines(system.file("pre-commit-hooks.yaml", package = "precommit")) %>%
   gsub("^ *exclude *: *>", "    exclude: |", .) %>%
   yaml::yaml.load() %>%

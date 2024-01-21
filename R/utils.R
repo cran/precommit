@@ -38,10 +38,6 @@ is_package <- function(root = here::here()) {
     magrittr::not()
 }
 
-add_trailing_linebreak <- function(x) {
-  paste0(x, "\n")
-}
-
 #' Name the input
 #'
 #' @param x A vector.
@@ -76,7 +72,7 @@ dirs_R.cache <- function(hook_id) {
 #'
 #' In particular, to avoid CRAN errors
 #' [lorenzwalthert/precommit#320](https://github.com/lorenzwalthert/precommit/issues/320).
-#' @inheritParams git2r::init
+#' @param path The root of the repo.
 #' @keywords internal
 git_init <- function(path = ".") {
   git2r::init(path = path)
@@ -87,6 +83,27 @@ git_init <- function(path = ".") {
   )
 }
 
+#' Provide a singular interface for hook calls to docopt
+#'
+#' docopt provides different processing for a single string
+#' than an array/vector. As `"string"`` and `c("string")`
+#' are semantically equivalent in R, this can create problems
+#' when a single parameter is provided. Thus, this function
+#' wraps docopt to ensure that the args will always be
+#' interpreted as a vector.
+#'
+#' This function is only exported for use in hook scripts, but it's not intended
+#' to be called by the end-user directly.
+#' @param doc `character` vector with command line specification.
+#' @param args `character` vector of command line arguments.
+#'   Defaults to `commandArgs(trailingOnly=TRUE)`.
+#' @param ... Additional parameters passed to `docopt`.
+#' @family hook script helpers
+#' @keywords internal
+#' @export
+precommit_docopt <- function(doc, args = commandArgs(trailingOnly = TRUE), ...) {
+  docopt::docopt(doc, c(args, ""), ...)
+}
 
 #' Read the refs corresponding to a hooks repo
 #' @keywords internal
