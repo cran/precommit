@@ -1,6 +1,6 @@
-23ae367b8bef9f8237d05dfe52cb3ed2 *DESCRIPTION
+e11ccc89df243e3df8eb48aea9ab061d *DESCRIPTION
 b00b6b67d84a9a1cb3ae62e65ddd25aa *NAMESPACE
-18d09742fa2141c7ff91fbf5ad0460c8 *NEWS.md
+d0f3566ea2be2eede6ed4823c1c6cb8f *NEWS.md
 0a9b5bfd85bc4f26baee4955bf8a4a74 *R/aaa.R
 b488aa2eb73a5b05d910533093550101 *R/assert.R
 f6c9acb6282630a349e679b8fccbc6b0 *R/cache.R
@@ -11,10 +11,10 @@ d2340f527abbeabc6ba718f3ccd793fc *R/exec.R
 734948442b95895c30262d274b5bc246 *R/open.R
 499f22d4dbff520ce2c3a2903faa6820 *R/precommit-package.R
 90c430a2ca8f1d1d90d1c6106816beae *R/purl.R
-bafdf67c2363b37df6b72b24f261843c *R/release.R
+7875815b771f2699f56e600a04e57ccf *R/release.R
 065f159edfe85961351da80c6339f9be *R/roxygen2.R
 8b46a7020f653756406e35cdae3e3237 *R/setup.R
-31857069332bc03aa4d6eb1df6760d40 *R/testing.R
+f86381259425cad119a3e1a01cf53eec *R/testing.R
 cafd6737d843586938367db53406638c *R/update.R
 8bf3d9a95f5925dc00a67f284bcf3d15 *R/usethis.R
 7f6fcceb9e073c0a5112d73c37564d5e *R/utils.R
@@ -26,7 +26,7 @@ e4b7710e67e1af34ab9e99747a176d8f *build/vignette.rds
 21cb16a959e6b34dd52fdc85e209d609 *inst/doc/FAQ.html
 8d6865125fb48cf173efeda45a3c688e *inst/doc/available-hooks.R
 47b5a29d499aaf8f48a89ac1108856c6 *inst/doc/available-hooks.Rmd
-47a106c04c843c150b08ca153f411b92 *inst/doc/available-hooks.html
+333fe65840128296cb409c1bb01209d6 *inst/doc/available-hooks.html
 70bfb1439ef12da5189049a5bbfe863c *inst/doc/ci.Rmd
 f4d98ec1dd018bc7c960d5668d36edbb *inst/doc/ci.html
 5e270ae6034b339c2a13d20a5f7d2dec *inst/doc/hook-order.R
@@ -53,8 +53,8 @@ dda0ba413c15d1b180c7e5d37fa6dde0 *inst/hooks/exported/roxygenize.R
 a9e6a842c52975cdfbf17930b6dd7801 *inst/hooks/exported/spell-check.R
 4eba1ddf6a176981681df1aceafcdf40 *inst/hooks/exported/style-files.R
 31d82d75ed9ffb38851ac931b3df88c1 *inst/hooks/exported/use-tidy-description.R
-77723ba74be5cbceaddfc83039dfbb27 *inst/pre-commit-config-pkg.yaml
-68e522ce8f4cbba08f86667c7bc0b593 *inst/pre-commit-config-proj.yaml
+13b5f43abd902535ab47ac8fd3dc7cd2 *inst/pre-commit-config-pkg.yaml
+527fe4866faa31f532b7a936be4aa20e *inst/pre-commit-config-proj.yaml
 2d0e4144e701f624cd373c58bb882768 *inst/pre-commit-gha.yaml
 f50047f5c06b463361a9125ec78448f2 *inst/pre-commit-hooks.yaml
 4ef688631a5422f439704cb3409f33be *inst/update-ppm-url.R
@@ -67,6 +67,7 @@ a0c1f0b544c46bc6da403b4e349d1fa0 *man/call_precommit.Rd
 d30e02f0e52064ded583146027209a02 *man/copy_artifacts.Rd
 981bb143b37979a6621a1313ab500f93 *man/diff_requires_run_roxygenize.Rd
 14b472a650f1ce7b29e47689a85c10df *man/dirs_R.cache.Rd
+e02cba708461fd589350d243d314e0bc *man/empty_on_cran.Rd
 1af9b84acf1f7e7a1ce5c34e5e6178c6 *man/ensure_named.Rd
 0fcff019bcd75e94ae65902309fa3492 *man/fallback_doc.Rd
 8bc9e6da2d9e1b9956696614205b9d64 *man/figures/pre-commit-meme.jpeg
@@ -176,9 +177,9 @@ f7e6125afc75a47c425efc5f66224fcd *tests/testthat/test-hook-lintr.R
 fe2463694d83157da4047e549919042c *tests/testthat/test-hook-no-debug-statement.R
 827893b795f32e0bc0d1dcef79f55713 *tests/testthat/test-hook-no-print-statement.R
 c752bac620d81c248451a5b103672f69 *tests/testthat/test-hook-parsable-R.R
-d18604b54f736dfd061d937eeeef8d59 *tests/testthat/test-hook-pkgdown.R
+fc44ebb5ce2744c3339ec51bc37e5c71 *tests/testthat/test-hook-pkgdown.R
 f0ce08d239bb8d2a1c8585a5af5a9076 *tests/testthat/test-hook-readme-rmd-rendered.R
-01e4465b65d4fe4ca7d84008cab81e05 *tests/testthat/test-hook-roxygenize.R
+e3f307218f1d8dc939300d1c6caf41b1 *tests/testthat/test-hook-roxygenize.R
 ba1d5ff13522a51391f132f6e9bf3a75 *tests/testthat/test-hook-spell-check.R
 55b319137d420ecd5cf8ef15871056cb *tests/testthat/test-hook-style-files.R
 dd50af79b41a7f00560b7752c0395d17 *tests/testthat/test-hook-use-tidy-description.R
