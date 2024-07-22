@@ -1,6 +1,6 @@
 Package: precommit
 Title: Pre-Commit Hooks
-Version: 0.4.2
+Version: 0.4.3
 Author: Lorenz Walthert
 Maintainer: Lorenz Walthert <lorenz.walthert@icloud.com>
 Description: Useful git hooks for R building on top of the multi-language
@@ -24,6 +24,6 @@ SystemRequirements: git
 Config/testthat/parallel: true
 Config/testthat/edition: 3
 NeedsCompilation: no
-Packaged: 2024-04-10 14:27:17 UTC; lorenz
+Packaged: 2024-07-22 13:56:23 UTC; lorenz
 Repository: CRAN
-Date/Publication: 2024-04-10 16:20:03 UTC
+Date/Publication: 2024-07-22 22:20:05 UTC
